@@ -29,9 +29,6 @@ import warnings
 warnings.filterwarnings('ignore')
 
 # Importando o dataset
-
-from google.colab import drive
-drive.mount('/content/drive/')
 path = Path(__file__).parent/'data/galds.csv'
 
 with open(path, "rt") as f:
