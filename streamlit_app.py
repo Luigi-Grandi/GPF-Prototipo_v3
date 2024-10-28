@@ -129,17 +129,24 @@ process_temp = st.number_input("Temperatura do Processo [K]", min_value=0.0, for
 rot_speed = st.number_input("Velocidade Rotacional [rpm]", min_value=0, format="%d")
 torque = st.number_input("Torque [Nm]", min_value=0.0, format="%.2f")
 tool_wear = st.number_input("Desgaste da Ferramenta [min]", min_value=0, format="%d")
+machine_failure = st.selectbox("Falha da Máquina (Machine failure)", [0, 1])
+twf = st.selectbox("Falha de Ferramenta (TWF)", [0, 1])
+hdf = st.selectbox("Falha de Head (HDF)", [0, 1])
+pwf = st.selectbox("Falha de Potência (PWF)", [0, 1])
+osf = st.selectbox("Falha no Sistema de Sobrecarga (OSF)", [0, 1])
+rnf = st.selectbox("Falha de Recipiente (RNF)", [0, 1])
 
-# Convertendo valores de entrada
+# Mapeamento e conversão dos dados de entrada para valores numéricos
 type_mapping = {"A": 0, "B": 1, "C": 2}  # Use o mapeamento correto para seu modelo
 type_encoded = type_mapping[type_value]
 
 # Formando a entrada para o modelo
-input_data = np.array([[type_encoded, air_temp, process_temp, rot_speed, torque, tool_wear]])
+input_data = np.array([[type_encoded, air_temp, process_temp, rot_speed, torque, tool_wear,
+                        machine_failure, twf, hdf, pwf, osf, rnf]])
 
 # Realizando a previsão quando o botão é pressionado
 if st.button("Prever Falha"):
     prediction = model.predict(input_data)
-    predicted_class = int(np.round(prediction[0][0]))  # Supondo uma saída binária, ajuste se necessário
+    predicted_class = int(np.round(prediction[0][0]))  # Supondo uma saída binária
     resultado = "Falha" if predicted_class == 1 else "Sem Falha"
     st.write(f"Resultado da Previsão: **{resultado}**")
