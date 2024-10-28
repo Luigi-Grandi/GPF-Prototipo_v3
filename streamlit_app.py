@@ -14,7 +14,7 @@ st.title("Previsão de Falha de Máquina com LSTM")
 st.header("Insira os dados da máquina:")
 
 # Campos de entrada atualizados
-type_value = st.selectbox("Tipo da Máquina (Type)", ["A", "B", "C"])  # Adapte para os valores possíveis em `Type`
+type_value = st.selectbox("Tipo da Máquina (Type)", ["L", "M", "H"])  # Adapte para os valores possíveis em `Type`
 air_temp = st.number_input("Temperatura do Ar [K]", min_value=0.0, format="%.2f")
 process_temp = st.number_input("Temperatura do Processo [K]", min_value=0.0, format="%.2f")
 rot_speed = st.number_input("Velocidade Rotacional [rpm]", min_value=0, format="%d")
@@ -22,7 +22,7 @@ torque = st.number_input("Torque [Nm]", min_value=0.0, format="%.2f")
 tool_wear = st.number_input("Desgaste da Ferramenta [min]", min_value=0, format="%d")
 
 # Mapeamento e conversão dos dados de entrada para valores numéricos
-type_mapping = {"A": 0, "B": 1, "C": 2}  # Use o mapeamento correto para seu modelo
+type_mapping = {"L": 0, "M": 1, "H": 2}  # Use o mapeamento correto para seu modelo
 type_encoded = type_mapping[type_value]
 
 # Agrupando as entradas como array e padronizando
