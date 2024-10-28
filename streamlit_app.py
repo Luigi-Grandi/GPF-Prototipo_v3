@@ -114,7 +114,7 @@ print(f'Loss: {loss}, Accuracy: {accuracy}')
 
 # Carregue o modelo previamente treinado
 # Exemplo: model = tf.keras.models.load_model('meu_modelo.h5')
-model = tf.keras.models.load_model('seu_modelo.h5')  # Substitua pelo caminho do seu modelo
+# model = tf.keras.models.load_model('seu_modelo.h5')  # Substitua pelo caminho do seu modelo
 
 # Título do aplicativo
 st.title("Previsão de Falha de Máquina")
