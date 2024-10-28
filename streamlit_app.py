@@ -40,9 +40,13 @@ time_steps = 10
 X_input = np.array([input_data_scaled for _ in range(time_steps)])  # Usando valores repetidos para simular uma sequência
 X_input = np.expand_dims(X_input, axis=0)
 
+# Removendo o eixo adicional para ajustar à forma correta
+X_input = np.squeeze(X_input, axis=2)  # Agora a forma será (1, 10, 11)
+
 # Realizando a previsão quando o botão é pressionado
 if st.button("Prever Falha"):
     prediction = model.predict(X_input)
     predicted_class = int(np.round(prediction[0][0]))  # Supondo uma saída binária
     resultado = "Falha" if predicted_class == 1 else "Sem Falha"
     st.write(f"Resultado da Previsão: **{resultado}**")
+
