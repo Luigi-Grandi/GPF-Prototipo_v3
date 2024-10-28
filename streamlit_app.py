@@ -6,6 +6,11 @@ import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Flatten
 from tensorflow.keras.utils import to_categorical
+from tensorflow.keras.layers import LSTM, Dense, Dropout
+from keras.layers import BatchNormalization
+from keras.callbacks import EarlyStopping
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Input, LSTM, Dense
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -13,14 +18,9 @@ import seaborn as sns
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.preprocessing import StandardScaler
-from tensorflow.keras.layers import LSTM, Dense, Dropout
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
-from keras.layers import BatchNormalization
-from keras.callbacks import EarlyStopping
 from sklearn.preprocessing import LabelEncoder, StandardScaler
-from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Input, LSTM, Dense
 from pathlib import Path
 
 # Remover Avisos
