@@ -44,3 +44,4 @@ if st.button("Prever Falha"):
     predicted_class = int(np.round(prediction[0][0]))  # Supondo uma saída binária
     resultado = "Falha" if predicted_class == 1 else "Sem Falha"
     st.write(f"Resultado da Previsão: **{resultado}**")
+    st.write(f"Resultado da Previsão: **{prediction}**")
