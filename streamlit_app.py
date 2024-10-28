@@ -45,3 +45,4 @@ if st.button("Prever Falha"):
     resultado = "Falha" if predicted_class == 1 else "Sem Falha"
     st.write(f"Resultado da Previsão: **{resultado}**")
     st.write(f"Resultado da Previsão: **{prediction}**")
+    st.write(f"Resultado da Previsão: **{predicted_class}**")
