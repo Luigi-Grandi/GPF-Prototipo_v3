@@ -52,7 +52,7 @@ if st.button("Prever Falha"):
         resultado = "Falha" if prediction >= 0.1 else "Sem Falha"
         
         # Mostrando os resultados da previsão
-        #st.write(f"Resultado númerico da Previsão: {prediction[0][0]}")
+        st.write(f"Resultado númerico da Previsão: {prediction[0][0]}")
         st.write(f"Resultado da Previsão: {resultado}")
     except Exception as e:
         st.error(f"Erro ao fazer a previsão: {e}")
