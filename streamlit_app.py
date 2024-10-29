@@ -49,7 +49,7 @@ if st.button("Prever Falha"):
         # Fazendo a previsão
         prediction = model.predict(X_input)
         predicted_class = int(np.round(prediction[0][0]))  # Supondo uma saída binária (0 ou 1)
-        resultado = "Falha" if predicted_class == 1 else "Sem Falha"
+        resultado = "Falha" if predicted_class >= 0.1 else "Sem Falha"
         
         # Mostrando os resultados da previsão
         st.write(f"Resultado númerico da Previsão: {prediction[0][0]}")
