@@ -42,8 +42,10 @@ st.markdown(
     }
     div.stButton button 
     {
+        flex: 1;
+        flex-align: center;
         align-self: center;
-        width: 200px;
+        width: 400px;
         cursor: pointer;
     }
     </style>
