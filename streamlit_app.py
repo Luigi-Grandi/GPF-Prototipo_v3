@@ -29,7 +29,8 @@ st.markdown(
         border-radius: 8px;
     }
     .header-container img {
-        width: 180px; /* Ajuste o tamanho do logotipo */
+        width:auto;
+        max-width: 180px; /* Ajuste o tamanho do logotipo */
         height: 180px;
         margin-right: 10px;
     }
