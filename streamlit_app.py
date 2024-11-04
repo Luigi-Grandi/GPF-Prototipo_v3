@@ -19,7 +19,7 @@ logo_base64 = base64.b64encode(open(logo_path, "rb").read()).decode()
 st.markdown(
     """
     <style>
-    .big-button {
+    button {
         font-size: 20px; /* Tamanho da fonte */
         padding: 15px 30px; /* Espaçamento interno (vertical, horizontal) */
         background-color: #1f77b4; /* Cor de fundo */
@@ -109,8 +109,7 @@ X_input = np.tile(input_data_scaled, (time_steps, 1))
 X_input = X_input.reshape((1, time_steps, input_data_scaled.shape[1]))
 
 # Botão de previsão
-if st.button("🔍 Prever Falha", key="predict_button", help="Clique para prever a falha da máquina", 
-             css_class="big-button"):
+if st.button("🔍 Prever Falha"):
     try:
         # Fazendo a previsão
         prediction = model.predict(X_input)
