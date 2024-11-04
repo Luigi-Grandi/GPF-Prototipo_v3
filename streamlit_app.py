@@ -30,12 +30,14 @@ st.markdown(
         border-radius: 8px;
     }
     .header-container img {
+        display: flex;
         width: auto; /* Ajuste o tamanho do logotipo */
         height: auto;
         margin-right: 10px;
         flex: 1;
     }
     .header-container h1 {
+        display: flex;
         color: #FFFFFF;
         font-size: 60px;
         flex: 4;
