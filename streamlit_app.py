@@ -6,6 +6,14 @@ from tensorflow.keras.models import load_model
 import joblib
 import seaborn as sns
 import matplotlib.pyplot as plt
+import base64
+
+# Carregar a imagem do logotipo
+logo_path = "data/logo.jpg"  # Caminho para a imagem do logotipo
+logo_ext = "jpg"  # Extensão do logotipo
+
+# Codificar a imagem do logotipo em Base64
+logo_base64 = base64.b64encode(open(logo_path, "rb").read()).decode()
 
 # Configurações de estilo personalizado com CSS
 st.markdown(
@@ -36,19 +44,19 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-main_bg = "logo.jpg"
-main_bg_ext = "jpg"
 # Cabeçalho com logotipo e título
 st.markdown(
-    """
+    f"""
     <div class="header-container">
-        <img url(data:data/{main_bg_ext};base64,{base64.b64encode(open(main_bg, "rb").read()).decode()}) alt="Logo">
+        <img src="data:image/{logo_ext};base64,{logo_base64}" alt="Logo">
         <h1>Previsão de Falha de Máquina com LSTM</h1>
     </div>
     """,
     unsafe_allow_html=True
 )
-st.image("data/logo.jpg", width=60)  # Adiciona o logotipo abaixo do título
+
+# Adicione um espaço para evitar que o conteúdo inicial fique atrás do cabeçalho fixo
+st.markdown("<div style='margin-top: 80px;'></div>", unsafe_allow_html=True)
 
 # Carregar o modelo LSTM previamente salvo
 model = load_model('my_model2.keras')
