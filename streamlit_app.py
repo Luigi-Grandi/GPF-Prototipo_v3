@@ -24,8 +24,8 @@ st.markdown(
     }
     .header-container {
         display: flex;
-        align-items: right;
-        justify-content: center;
+        align-items: left;
+        justify-content: left;
         padding: 10px;
         //background-color: #4b0082; /* Fundo do cabeçalho em roxo escuro */
         color: white;
