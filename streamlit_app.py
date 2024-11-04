@@ -46,6 +46,7 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+st.image("data/logo.jpg", width=60)  # Adiciona o logotipo abaixo do título
 
 # Carregar o modelo LSTM previamente salvo
 model = load_model('my_model2.keras')
