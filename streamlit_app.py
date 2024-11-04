@@ -36,6 +36,10 @@ st.markdown(
         height: auto;
         margin-right: 10px;
     }
+    .header-container h1 {
+        color: #4b0082;
+        font-size: 60px;
+    }
     h1, h2, h3 {
         color: #1f77b4; /* Nova cor dos títulos */
     }
