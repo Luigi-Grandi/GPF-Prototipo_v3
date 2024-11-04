@@ -19,15 +19,6 @@ logo_base64 = base64.b64encode(open(logo_path, "rb").read()).decode()
 st.markdown(
     """
     <style>
-    button {
-        font-size: 100px; /* Tamanho da fonte */
-        padding: 15px 30px; /* Espaçamento interno (vertical, horizontal) */
-        background-color: #1f77b4; /* Cor de fundo */
-        color: white; /* Cor do texto */
-        border: none; /* Sem borda */
-        border-radius: 5px; /* Bordas arredondadas */
-        cursor: pointer; /* Muda o cursor ao passar o mouse */
-    }
     .header-container {
         display: flex;
         align-items: left;
@@ -118,7 +109,7 @@ if st.button("🔍 Prever Falha"):
         # Exibindo o resultado em um cartão de destaque
         st.markdown(
             f"""
-            <div style="padding:10px; border-radius:5px; background-color: {'#FFCCCC' if resultado == 'Falha' else '#CCFFCC'};">
+            <div style="padding:10px; border-radius:5px; background-color: {'#FF0000' if resultado == 'Falha' else '#36ff00'};">
                 <h3 style="text-align: center;">Resultado da Previsão</h3>
                 <p style="text-align: center; font-size: 20px; font-weight: bold;">{resultado}</p>
             </div>
