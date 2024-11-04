@@ -20,7 +20,7 @@ st.markdown(
     """
     <style>
     button {
-        font-size: 20px; /* Tamanho da fonte */
+        font-size: 100px; /* Tamanho da fonte */
         padding: 15px 30px; /* Espaçamento interno (vertical, horizontal) */
         background-color: #1f77b4; /* Cor de fundo */
         color: white; /* Cor do texto */
