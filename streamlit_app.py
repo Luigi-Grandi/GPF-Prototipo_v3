@@ -109,7 +109,7 @@ if st.button("🔍 Prever Falha"):
         # Exibindo o resultado em um cartão de destaque
         st.markdown(
             f"""
-            <div style="padding:10px; border-radius:5px; background-color: {'#FF0000' if resultado == 'Falha' else '#36ff00'};">
+            <div style="padding:10px; border-radius:5px; background-color: {'#cb0000' if resultado == 'Falha' else '#26b500'};">
                 <h3 style="text-align: center; color: white;">Resultado da Previsão</h3>
                 <p style="text-align: center; font-size: 20px; font-weight: bold;">{resultado}</p>
             </div>
