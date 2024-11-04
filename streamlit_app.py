@@ -21,8 +21,9 @@ st.markdown(
     <style>
     .header-container {
         display: flex;
-        align-items: left;
-        justify-content: left;
+        flex: 1;
+        align-items: center;
+        justify-content: center;
         padding: 10px;
         //background-color: #4b0082; /* Fundo do cabeçalho em roxo escuro */
         color: white;
