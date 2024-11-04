@@ -21,19 +21,17 @@ st.markdown(
     <style>
     .header-container {
         display: flex;
-        flex: 1;
-        align-items: center;
-        justify-content: center;
+        align-items: left;
+        justify-content: left;
         padding: 10px;
         //background-color: #4b0082; /* Fundo do cabeçalho em roxo escuro */
         color: white;
         border-radius: 8px;
     }
     .header-container img {
-        width: 80; /* Ajuste o tamanho do logotipo */
-        height: 80;
+        width: 180px; /* Ajuste o tamanho do logotipo */
+        height: 180px;
         margin-right: 10px;
-        //flex: 1;
     }
     .header-container h1 {
         color: #FFFFFF;
