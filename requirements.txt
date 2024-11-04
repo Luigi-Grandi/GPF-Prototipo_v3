@@ -8,3 +8,6 @@ scikit-learn
 keras
 streamlit
 seaborn
+catboost
+joblib
+warnings
