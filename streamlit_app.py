@@ -38,13 +38,20 @@ st.markdown(
     }
     .header-container h1 {
         color: #FFFFFF;
-        font-size: 30px; /* Tamanho padrão */
+        font-size: 60px; /* Tamanho padrão */
         white-space: nowrap; /* Impede que o texto quebre em várias linhas */
     }
     @media (max-width: 600px) { /* Ajustes para telas menores */
         .header-container h1 {
-            font-size: 24px; /* Reduz o tamanho da fonte em telas pequenas */
+            font-size: 20px; /* Reduz o tamanho da fonte em telas pequenas */
         }
+        .header-container img {
+            width: auto;
+            max-width: 60px; /* Ajuste o tamanho do logotipo */
+            height: auto; /* Mantém a proporção da imagem */
+            margin-right: 10px;
+        }
+        
     }
     h1, h2, h3 {
         color: #1f77b4; /* Nova cor dos títulos */
