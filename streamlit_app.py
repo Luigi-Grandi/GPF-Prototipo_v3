@@ -37,7 +37,7 @@ st.markdown(
         margin-right: 10px;
     }
     .header-container h1 {
-        color: #4b0082;
+        color: #00FFFF;
         font-size: 60px;
     }
     h1, h2, h3 {
@@ -53,7 +53,7 @@ st.markdown(
     f"""
     <div class="header-container">
         <img src="data:image/{logo_ext};base64,{logo_base64}" alt="Logo">
-        <h1>Preditor de Falha GPF</h1>
+        <h1>Gestor Preditivo de Falhas</h1>
     </div>
     """,
     unsafe_allow_html=True
