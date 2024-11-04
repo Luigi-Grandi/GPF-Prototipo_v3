@@ -17,7 +17,7 @@ scaler = joblib.load('scaler.pkl')
 data = pd.read_csv('data/galds.csv')
 
 # Título do aplicativo
-st.title("Preevisão de Falha de Máquina com LSTM")
+st.title("Previsão de Falha de Máquina com LSTM")
 
 # Seção de gráficos exploratórios
 st.header("Análise Exploratória dos Dados")
