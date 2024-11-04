@@ -10,4 +10,3 @@ streamlit
 seaborn
 catboost
 joblib
-warnings
