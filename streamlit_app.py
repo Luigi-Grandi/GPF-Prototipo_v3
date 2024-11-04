@@ -17,26 +17,34 @@ logo_base64 = base64.b64encode(open(logo_path, "rb").read()).decode()
 
 # Configurações de estilo personalizado com CSS
 st.markdown(
-    """
+       """
     <style>
     .header-container {
         display: flex;
-        align-items: left;
-        justify-content: left;
+        align-items: center;  /* Centraliza verticalmente */
+        justify-content: flex-start;  /* Alinhamento à esquerda */
         padding: 10px;
-        //background-color: #4b0082; /* Fundo do cabeçalho em roxo escuro */
         color: white;
         border-radius: 8px;
+        max-width: 100%; /* Limita a largura do cabeçalho */
+        overflow: hidden; /* Oculta o conteúdo que excede */
+        flex-wrap: wrap;  /* Permite que os itens se movam para a linha seguinte se necessário */
     }
     .header-container img {
-        width:auto;
-        max-width: 180px; /* Ajuste o tamanho do logotipo */
-        height: 180px;
+        width: auto;
+        max-width: 120px; /* Ajuste o tamanho do logotipo */
+        height: auto; /* Mantém a proporção da imagem */
         margin-right: 10px;
     }
     .header-container h1 {
         color: #FFFFFF;
-        font-size: 60px;
+        font-size: 30px; /* Tamanho padrão */
+        white-space: nowrap; /* Impede que o texto quebre em várias linhas */
+    }
+    @media (max-width: 600px) { /* Ajustes para telas menores */
+        .header-container h1 {
+            font-size: 24px; /* Reduz o tamanho da fonte em telas pequenas */
+        }
     }
     h1, h2, h3 {
         color: #1f77b4; /* Nova cor dos títulos */
