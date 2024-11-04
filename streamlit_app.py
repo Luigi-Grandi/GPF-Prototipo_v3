@@ -37,7 +37,7 @@ st.markdown(
         margin-right: 10px;
     }
     .header-container h1 {
-        color: #00FFFF;
+        color: #FFFFFF;
         font-size: 60px;
     }
     h1, h2, h3 {
