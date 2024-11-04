@@ -21,7 +21,7 @@ st.markdown(
     <style>
     .header-container {
         display: flex;
-        //flex: 1;
+        flex: 1;
         align-items: center;
         justify-content: center;
         padding: 10px;
@@ -30,17 +30,14 @@ st.markdown(
         border-radius: 8px;
     }
     .header-container img {
-        display: flex;
-        width: auto; /* Ajuste o tamanho do logotipo */
-        height: auto;
+        width: 80; /* Ajuste o tamanho do logotipo */
+        height: 80;
         margin-right: 10px;
-        flex: 1;
+        //flex: 1;
     }
     .header-container h1 {
-        display: flex;
         color: #FFFFFF;
         font-size: 60px;
-        flex: 4;
     }
     h1, h2, h3 {
         color: #1f77b4; /* Nova cor dos títulos */
