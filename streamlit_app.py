@@ -36,11 +36,13 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+main_bg = "logo.jpg"
+main_bg_ext = "jpg"
 # Cabeçalho com logotipo e título
 st.markdown(
     """
     <div class="header-container">
-        <img src="data/logo.jpg" alt="Logo">
+        <img url(data:data/{main_bg_ext};base64,{base64.b64encode(open(main_bg, "rb").read()).decode()}) alt="Logo">
         <h1>Previsão de Falha de Máquina com LSTM</h1>
     </div>
     """,
