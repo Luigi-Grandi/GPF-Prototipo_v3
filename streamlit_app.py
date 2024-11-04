@@ -38,12 +38,12 @@ st.markdown(
     }
     .header-container h1 {
         color: #FFFFFF;
-        font-size: 50px; /* Tamanho padrão */
+        font-size: 40px; /* Tamanho padrão */
         white-space: nowrap; /* Impede que o texto quebre em várias linhas */
     }
     @media (max-width: 600px) { /* Ajustes para telas menores */
         .header-container h1 {
-            font-size: 20px; /* Reduz o tamanho da fonte em telas pequenas */
+            font-size: 15px; /* Reduz o tamanho da fonte em telas pequenas */
         }
         .header-container img {
             width: auto;
