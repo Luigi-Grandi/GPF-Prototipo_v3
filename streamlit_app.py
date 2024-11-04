@@ -40,6 +40,11 @@ st.markdown(
     h1, h2, h3 {
         color: #1f77b4; /* Nova cor dos títulos */
     }
+    div.stButton button 
+    {
+        background-color: brown;
+        width: 200px;
+    }
     </style>
     """,
     unsafe_allow_html=True
