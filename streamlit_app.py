@@ -42,15 +42,9 @@ st.markdown(
     }
     div.stButton button 
     {
-        font-size: 20px; /* Tamanho da fonte */
-        padding: 15px 30px; /* Espaçamento interno (vertical, horizontal) */
-        background-color: #1f77b4; /* Cor de fundo */
-        color: white; /* Cor do texto */
-        border: none; /* Sem borda */
-        border-radius: 5px; /* Bordas arredondadas */
-        cursor: pointer; /* Muda o cursor ao passar o mouse */
-        display: inline-block; /* Para que funcione o centramento */
-        margin: 20px auto; /* Margem automática para centralizar */
+        align-self: center;
+        width: 200px;
+        cursor: pointer;
     }
     </style>
     """,
