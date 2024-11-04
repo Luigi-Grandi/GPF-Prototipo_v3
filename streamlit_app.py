@@ -27,12 +27,12 @@ st.markdown(
         align-items: center;
         justify-content: center;
         padding: 10px;
-        background-color: #4b0082; /* Fundo do cabeçalho em roxo escuro */
+        //background-color: #4b0082; /* Fundo do cabeçalho em roxo escuro */
         color: white;
         border-radius: 8px;
     }
     .header-container img {
-        width: 60px; /* Ajuste o tamanho do logotipo */
+        width: 180px; /* Ajuste o tamanho do logotipo */
         height: auto;
         margin-right: 10px;
     }
@@ -49,7 +49,7 @@ st.markdown(
     f"""
     <div class="header-container">
         <img src="data:image/{logo_ext};base64,{logo_base64}" alt="Logo">
-        <h1>Previsão de Falha de Máquina com LSTM</h1>
+        <h1>Preditor de Falha GPF</h1>
     </div>
     """,
     unsafe_allow_html=True
