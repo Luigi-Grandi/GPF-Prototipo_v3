@@ -12,10 +12,10 @@ st.markdown(
     """
     <style>
     .main {
-        background-color: #f0f2f6;
+        background-color: #d8bfd8; /* Tom de roxo claro */
     }
     h1, h2, h3 {
-        color: #1f77b4;
+        color: #4b0082; /* Roxo escuro para títulos */
     }
     </style>
     """,
