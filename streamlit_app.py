@@ -29,8 +29,8 @@ st.markdown(
         border-radius: 8px;
     }
     .header-container img {
-        width: 180px; /* Ajuste o tamanho do logotipo */
-        height: 180px;
+        width: auto; /* Ajuste o tamanho do logotipo */
+        height: auto;
         margin-right: 10px;
     }
     .header-container h1 {
@@ -45,7 +45,7 @@ st.markdown(
         flex: 1;
         flex-align: center;
         align-self: center;
-        width: 800px;
+        width: auto;
         cursor: pointer;
     }
     </style>
