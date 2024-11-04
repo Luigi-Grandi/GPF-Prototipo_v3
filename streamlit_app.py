@@ -33,7 +33,7 @@ st.markdown(
     }
     .header-container img {
         width: 180px; /* Ajuste o tamanho do logotipo */
-        height: auto;
+        height: 180px;
         margin-right: 10px;
     }
     .header-container h1 {
