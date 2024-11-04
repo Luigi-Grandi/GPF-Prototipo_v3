@@ -40,7 +40,7 @@ st.markdown(
 st.markdown(
     """
     <div class="header-container">
-        <img src="data/logo.png" alt="Logo">
+        <img src="data/logo.jpg" alt="Logo">
         <h1>Previsão de Falha de Máquina com LSTM</h1>
     </div>
     """,
