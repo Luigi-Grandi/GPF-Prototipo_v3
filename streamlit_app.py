@@ -108,24 +108,35 @@ X_input = np.tile(input_data_scaled, (time_steps, 1))
 X_input = X_input.reshape((1, time_steps, input_data_scaled.shape[1]))
 
 # Botão de previsão
-if st.button("🔍 Prever Falha"):
-    try:
-        # Fazendo a previsão
-        prediction = model.predict(X_input)
-        resultado = "Falha" if prediction >= 0.1 else "Sem Falha"
-        
-        # Exibindo o resultado em um cartão de destaque
-        st.markdown(
-            f"""
-            <div style="padding:10px; border-radius:5px; background-color: {'#cb0000' if resultado == 'Falha' else '#26b500'};">
-                <h3 style="text-align: center; color: white;">Resultado da Previsão</h3>
-                <p style="text-align: center; font-size: 20px; font-weight: bold;">{resultado}</p>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-    except Exception as e:
-        st.error(f"Erro ao fazer a previsão: {e}")
+col1, col2, col3 , col4, col5 = st.beta_columns(5)
+
+with col1:
+    pass
+with col2:
+    pass
+with col4:
+    pass
+with col5:
+    pass
+with col3 :
+    if st.button("🔍 Prever Falha"):
+        try:
+            # Fazendo a previsão
+            prediction = model.predict(X_input)
+            resultado = "Falha" if prediction >= 0.1 else "Sem Falha"
+            
+            # Exibindo o resultado em um cartão de destaque
+            st.markdown(
+                f"""
+                <div style="padding:10px; border-radius:5px; background-color: {'#cb0000' if resultado == 'Falha' else '#26b500'};">
+                    <h3 style="text-align: center; color: white;">Resultado da Previsão</h3>
+                    <p style="text-align: center; font-size: 20px; font-weight: bold;">{resultado}</p>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+        except Exception as e:
+            st.error(f"Erro ao fazer a previsão: {e}")
 
 # Análise Exploratória dos Dados
 st.header("📊 Análise Exploratória dos Dados")
