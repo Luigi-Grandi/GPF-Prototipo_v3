@@ -1,8 +1,26 @@
 import streamlit as st
 import numpy as np
+import pandas as pd
 import tensorflow as tf
 from tensorflow.keras.models import load_model
-import joblib  # Para carregar o scaler salvo
+import joblib
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Configurações de estilo personalizado com CSS
+st.markdown(
+    """
+    <style>
+    .main {
+        background-color: #f0f2f6;
+    }
+    h1, h2, h3 {
+        color: #1f77b4;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
 # Carregar o modelo LSTM previamente salvo
 model = load_model('my_model2.keras')
@@ -10,19 +28,21 @@ model = load_model('my_model2.keras')
 # Carregar o scaler salvo
 scaler = joblib.load('scaler.pkl')  # Supondo que você tenha salvo o scaler ao treinar o modelo
 
-# Título do aplicativo
-st.title("Previsão de Falha de Máquina com LSTM")
+# Carregar o arquivo CSV
+data = pd.read_csv('data/galds.csv')
 
-# Entradas para o usuário
-st.header("Insira os dados da máquina:")
+# Título e introdução do aplicativo
+st.title("🔧 Previsão de Falha de Máquina com LSTM")
+st.write("Bem-vindo ao sistema de previsão de falhas! Insira os dados da máquina e explore as análises gráficas.")
 
-# Campos de entrada atualizados
-type_value = st.selectbox("Tipo da Máquina (Type)", ["L", "M", "H"])  # Adapte para os valores possíveis em Type
-air_temp = st.number_input("Temperatura do Ar [K]", min_value=0.0, format="%.2f")
-process_temp = st.number_input("Temperatura do Processo [K]", min_value=0.0, format="%.2f")
-rot_speed = st.number_input("Velocidade Rotacional [rpm]", min_value=0, format="%d")
-torque = st.number_input("Torque [Nm]", min_value=0.0, format="%.2f")
-tool_wear = st.number_input("Desgaste da Ferramenta [min]", min_value=0, format="%d")
+# Menu lateral para as entradas do usuário
+st.sidebar.title("Configurações e Entrada de Dados")
+type_value = st.sidebar.selectbox("Tipo da Máquina (Type)", ["L", "M", "H"])
+air_temp = st.sidebar.number_input("Temperatura do Ar [K]", min_value=0.0, format="%.2f")
+process_temp = st.sidebar.number_input("Temperatura do Processo [K]", min_value=0.0, format="%.2f")
+rot_speed = st.sidebar.number_input("Velocidade Rotacional [rpm]", min_value=0, format="%d")
+torque = st.sidebar.number_input("Torque [Nm]", min_value=0.0, format="%.2f")
+tool_wear = st.sidebar.number_input("Desgaste da Ferramenta [min]", min_value=0, format="%d")
 
 # Mapeamento e conversão dos dados de entrada para valores numéricos
 type_mapping = {"L": 0, "M": 1, "H": 2}
@@ -38,21 +58,54 @@ else:
     st.error("Erro ao carregar o scaler. Verifique se 'scaler.pkl' está disponível.")
 
 # Preparando a entrada no formato de sequência esperado pelo LSTM (1, 10, número de features)
-# Aqui assumo que você precisará de 10 timesteps; podemos replicar a entrada para criar uma sequência realista
 time_steps = 10
-X_input = np.tile(input_data_scaled, (time_steps, 1))  # Replicando os dados da entrada para formar uma sequência
+X_input = np.tile(input_data_scaled, (time_steps, 1))
 X_input = X_input.reshape((1, time_steps, input_data_scaled.shape[1]))
 
-# Realizando a previsão quando o botão é pressionado
-if st.button("Prever Falha"):
+# Botão de previsão
+if st.button("🔍 Prever Falha"):
     try:
         # Fazendo a previsão
         prediction = model.predict(X_input)
-        predicted_class = int(np.round(prediction[0][0]))  # Supondo uma saída binária (0 ou 1)
         resultado = "Falha" if prediction >= 0.1 else "Sem Falha"
         
-        # Mostrando os resultados da previsão
-        #st.write(f"Resultado númerico da Previsão: {prediction[0][0]}")
-        st.write(f"Resultado da Previsão: {resultado}")
+        # Exibindo o resultado em um cartão de destaque
+        st.markdown(
+            f"""
+            <div style="padding:10px; border-radius:5px; background-color: {'#FFCCCC' if resultado == 'Falha' else '#CCFFCC'};">
+                <h3 style="text-align: center;">Resultado da Previsão</h3>
+                <p style="text-align: center; font-size: 20px; font-weight: bold;">{resultado}</p>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
     except Exception as e:
         st.error(f"Erro ao fazer a previsão: {e}")
+
+# Análise Exploratória dos Dados
+st.header("📊 Análise Exploratória dos Dados")
+
+# Dividir gráficos em colunas para melhor organização
+col1, col2 = st.columns(2)
+
+# Gráfico 1: Distribuição de temperatura do ar em função do tipo de máquina
+with col1:
+    st.subheader("📈 Distribuição de Temperatura do Ar por Tipo de Máquina")
+    fig1, ax1 = plt.subplots()
+    sns.boxplot(data=data, x='Type', y='Air temperature [K]', ax=ax1)
+    st.pyplot(fig1)
+
+# Gráfico 2: Rotational speed vs Torque colorido por Machine failure
+with col2:
+    st.subheader("📉 Velocidade Rotacional vs Torque (Colorido por Falha)")
+    fig2, ax2 = plt.subplots()
+    sns.scatterplot(data=data, x='Rotational speed [rpm]', y='Torque [Nm]', hue='Machine failure', palette='coolwarm', ax=ax2)
+    st.pyplot(fig2)
+
+# Expansor para visualização da matriz de correlação
+with st.expander("Veja mais análises de correlação"):
+    st.subheader("🔍 Matriz de Correlação")
+    fig3, ax3 = plt.subplots(figsize=(10, 8))
+    correlation_matrix = data.drop(columns=['UDI', 'Product ID', 'Type']).corr()  # Removendo colunas não numéricas
+    sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', ax=ax3)
+    st.pyplot(fig3)
