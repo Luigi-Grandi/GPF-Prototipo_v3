@@ -38,7 +38,7 @@ st.markdown(
     }
     .header-container h1 {
         color: #FFFFFF;
-        font-size: 60px; /* Tamanho padrão */
+        font-size: 50px; /* Tamanho padrão */
         white-space: nowrap; /* Impede que o texto quebre em várias linhas */
     }
     @media (max-width: 600px) { /* Ajustes para telas menores */
@@ -47,7 +47,7 @@ st.markdown(
         }
         .header-container img {
             width: auto;
-            max-width: 60px; /* Ajuste o tamanho do logotipo */
+            max-width: 40px; /* Ajuste o tamanho do logotipo */
             height: auto; /* Mantém a proporção da imagem */
             margin-right: 10px;
         }
