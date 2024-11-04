@@ -15,7 +15,7 @@ st.markdown(
         background-color: #d8bfd8; /* Tom de roxo claro */
     }
     h1, h2, h3 {
-        color: #4b0082; /* Roxo escuro para títulos */
+        color: #1f77b4;
     }
     </style>
     """,
