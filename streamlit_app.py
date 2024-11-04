@@ -69,7 +69,7 @@ scaler = joblib.load('scaler.pkl')  # Supondo que você tenha salvo o scaler ao 
 data = pd.read_csv('data/galds.csv')
 
 # Título e introdução do aplicativo
-st.title("🔧 Previsão de Falha de Máquina com LSTM")
+st.title("🔧 Dashboard da previsão de Falha de Máquina")
 st.write("Bem-vindo ao sistema de previsão de falhas! Insira os dados da máquina e explore as análises gráficas.")
 
 # Menu lateral para as entradas do usuário
