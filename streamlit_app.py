@@ -42,7 +42,7 @@ st.markdown(
     }
     div.stButton button 
     {
-        background-color: brown;
+        align-self: center;
         width: 200px;
     }
     </style>
