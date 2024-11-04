@@ -14,10 +14,35 @@ st.markdown(
     .main {
         background-color: #d8bfd8; /* Tom de roxo claro */
     }
+    .header-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px;
+        background-color: #4b0082; /* Fundo do cabeçalho em roxo escuro */
+        color: white;
+        border-radius: 8px;
+    }
+    .header-container img {
+        width: 60px; /* Ajuste o tamanho do logotipo */
+        height: auto;
+        margin-right: 10px;
+    }
     h1, h2, h3 {
-        color: #1f77b4;
+        color: #1f77b4; /* Nova cor dos títulos */
     }
     </style>
+    """,
+    unsafe_allow_html=True
+)
+
+# Cabeçalho com logotipo e título
+st.markdown(
+    """
+    <div class="header-container">
+        <img src="data/logo.png" alt="Logo">
+        <h1>Previsão de Falha de Máquina com LSTM</h1>
+    </div>
     """,
     unsafe_allow_html=True
 )
