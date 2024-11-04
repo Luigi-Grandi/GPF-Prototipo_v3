@@ -33,10 +33,12 @@ st.markdown(
         width: auto; /* Ajuste o tamanho do logotipo */
         height: auto;
         margin-right: 10px;
+        flex: 1;
     }
     .header-container h1 {
         color: #FFFFFF;
         font-size: 60px;
+        flex: 4;
     }
     h1, h2, h3 {
         color: #1f77b4; /* Nova cor dos títulos */
