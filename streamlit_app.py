@@ -1,70 +1,12 @@
-import warnings
-warnings.filterwarnings('ignore')
-
-import joblib
-import pandas as pd
-from sklearn.preprocessing import LabelEncoder, StandardScaler, OneHotEncoder
-from sklearn.model_selection import train_test_split
-from sklearn.utils.class_weight import compute_class_weight
-from sklearn.metrics import classification_report, hamming_loss, f1_score
-from catboost import CatBoostClassifier
-import numpy as np
-
-# Carregar modelos salvos
-preprocessing_components = joblib.load('preprocessing_components.joblib')
-le_type = preprocessing_components['label_encoder_type']
-scaler = preprocessing_components['scaler']
-ohe = preprocessing_components['one_hot_encoder']
-
-# Carregar os classificadores individuais
-model_paths = [
-    'modelo_catboost_falhas_Failure_Type_HDF.joblib',
-    'modelo_catboost_falhas_Failure_Type_OSF.joblib',
-    'modelo_catboost_falhas_Failure_Type_PWF.joblib',
-    'modelo_catboost_falhas_Failure_Type_RNF.joblib',
-    'modelo_catboost_falhas_Failure_Type_TWF.joblib'
-]
-final_classifiers = {path.split('_')[-1].split('.')[0]: joblib.load(path) for path in model_paths}
-
-# Função para fazer predição
-def predict_failure(input_data):
-    try:
-        # Criar um DataFrame com os nomes das colunas que vêm do site
-        input_columns = ['Type_encoded', 'Air temperature [K]', 'Process temperature [K]', 'Rotational speed [rpm]', 'Torque [Nm]', 'Tool wear [min]']
-        input_df = pd.DataFrame(input_data, columns=input_columns)
-
-        # Mapear os nomes das colunas para o formato que o modelo espera
-        column_mapping = {
-            'Air temperature [K]': 'Air_temperature_K',
-            'Process temperature [K]': 'Process_temperature_K',
-            'Rotational speed [rpm]': 'Rotational_speed_rpm',
-            'Torque [Nm]': 'Torque_Nm',
-            'Tool wear [min]': 'Tool_wear_min'
-        }
-        
-        # Renomear as colunas do DataFrame para os nomes que o modelo espera
-        input_df.rename(columns=column_mapping, inplace=True)
-
-        # Aplicar o scaler apenas nas colunas contínuas (sem incluir o 'Type_encoded')
-        continuous_columns = ['Air_temperature_K', 'Process_temperature_K', 'Rotational_speed_rpm', 'Torque_Nm', 'Tool_wear_min']
-        input_df[continuous_columns] = scaler.transform(input_df[continuous_columns])
-
-        # Fazer a previsão para cada classificador e armazenar os resultados
-        predictions = {}
-        for label, clf in final_classifiers.items():
-            prediction = clf.predict(input_df)
-            predictions[label] = prediction[0]
-
-        # Filtrar os tipos de falhas detectadas
-        falhas = [label for label, pred in predictions.items() if pred == 1]
-        return falhas if falhas else ["Sem falhas detectadas"]
-    except Exception as e:
-        return [f"Erro ao fazer a previsão: {e}"]
-# Código do aplicativo Streamlit
 import streamlit as st
-import base64
-import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import tensorflow as tf
+from tensorflow.keras.models import load_model
+import joblib
 import seaborn as sns
+import matplotlib.pyplot as plt
+import base64
 
 # Carregar a imagem do logotipo
 logo_path = "data/logo.jpg"  # Caminho para a imagem do logotipo
@@ -127,6 +69,7 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
 # Cabeçalho com logotipo e título
 st.markdown(
     f"""
@@ -140,6 +83,12 @@ st.markdown(
 
 # Adicione um espaço para evitar que o conteúdo inicial fique atrás do cabeçalho fixo
 st.markdown("<div style='margin-top: 80px;'></div>", unsafe_allow_html=True)
+
+# Carregar o modelo LSTM previamente salvo
+model = load_model('my_model2.keras')
+
+# Carregar o scaler salvo
+scaler = joblib.load('scaler.pkl')  # Supondo que você tenha salvo o scaler ao treinar o modelo
 
 # Carregar o arquivo CSV
 data = pd.read_csv('data/galds.csv')
@@ -161,23 +110,39 @@ tool_wear = st.sidebar.number_input("Desgaste da Ferramenta [min]", min_value=0,
 type_mapping = {"L": 0, "M": 1, "H": 2}
 type_encoded = type_mapping[type_value]
 
-# Agrupando as entradas como array
+# Agrupando as entradas como array e padronizando usando o scaler treinado
 input_data = np.array([[type_encoded, air_temp, process_temp, rot_speed, torque, tool_wear]])
+
+# Verificar se o scaler foi carregado corretamente
+if scaler is not None:
+    input_data_scaled = scaler.transform(input_data)
+else:
+    st.error("Erro ao carregar o scaler. Verifique se 'scaler.pkl' está disponível.")
+
+# Preparando a entrada no formato de sequência esperado pelo LSTM (1, 10, número de features)
+time_steps = 10
+X_input = np.tile(input_data_scaled, (time_steps, 1))
+X_input = X_input.reshape((1, time_steps, input_data_scaled.shape[1]))
 
 # Botão de previsão
 if st.button("🔍 Prever Falha"):
-    resultado = predict_failure(input_data)
-    resultado_str = ', '.join(resultado)
-    st.markdown(
-        f"""
-        <div style="padding:10px; border-radius:5px; background-color: {'#cb0000' if 'Sem falhas detectadas' not in resultado else '#26b500'};">
-            <h3 style="text-align: center; color: white;">Resultado da Previsão</h3>
-            <p style="text-align: center; font-size: 20px; font-weight: bold;">{resultado_str}</p>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
+    try:
+        # Fazendo a previsão
+        prediction = model.predict(X_input)
+        resultado = "Falha" if prediction >= 0.1 else "Sem Falha"
+        
+        # Exibindo o resultado em um cartão de destaque
+        st.markdown(
+            f"""
+            <div style="padding:10px; border-radius:5px; background-color: {'#cb0000' if resultado == 'Falha' else '#26b500'};">
+                <h3 style="text-align: center; color: white;">Resultado da Previsão</h3>
+                <p style="text-align: center; font-size: 20px; font-weight: bold;">{resultado}</p>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+    except Exception as e:
+        st.error(f"Erro ao fazer a previsão: {e}")
 
 # Expansor para visualização da matriz de correlação
 with st.expander("Veja mais análises de correlação"):
