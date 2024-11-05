@@ -29,11 +29,17 @@ final_classifiers = {path.split('_')[-1].split('.')[0]: joblib.load(path) for pa
 # Função para fazer predição
 def predict_failure(input_data):
     try:
-        # Remover a coluna 'Type_encoded' antes de aplicar o scaler
-        input_data_scaled = scaler.transform(input_data[:, 1:])
+        # Criar um DataFrame com os nomes das colunas que o modelo espera
+        columns = ['Type_encoded', 'Air_temperature_K', 'Process_temperature_K', 'Rotational_speed_rpm', 'Torque_Nm', 'Tool_wear_min']
+        input_df = pd.DataFrame(input_data, columns=columns)
+        
+        # Aplicar o scaler apenas nas colunas contínuas
+        continuous_columns = ['Air_temperature_K', 'Process_temperature_K', 'Rotational_speed_rpm', 'Torque_Nm', 'Tool_wear_min']
+        input_df[continuous_columns] = scaler.transform(input_df[continuous_columns])
+        
         predictions = {}
         for label, clf in final_classifiers.items():
-            prediction = clf.predict(input_data_scaled)
+            prediction = clf.predict(input_df)
             predictions[label] = prediction[0]
         falhas = [label for label, pred in predictions.items() if pred == 1]
         return falhas if falhas else ["Sem falhas detectadas"]
@@ -55,8 +61,6 @@ logo_base64 = base64.b64encode(open(logo_path, "rb").read()).decode()
 
 # Configurações de estilo personalizado com CSS
 st.markdown(
-
-
            """
     <style>
     .header-container {
@@ -119,7 +123,6 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-
 # Adicione um espaço para evitar que o conteúdo inicial fique atrás do cabeçalho fixo
 st.markdown("<div style='margin-top: 80px;'></div>", unsafe_allow_html=True)
 
