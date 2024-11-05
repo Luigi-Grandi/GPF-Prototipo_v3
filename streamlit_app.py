@@ -157,30 +157,25 @@ if st.button("🔍 Prever Falha"):
         unsafe_allow_html=True
     )
 
-# Análise Exploratória dos Dados
-st.header("📊 Análise Exploratória dos Dados")
-
-# Dividir gráficos em colunas para melhor organização
-col1, col2 = st.columns(2)
-
-# Gráfico 1: Distribuição de temperatura do ar em função do tipo de máquina
-with col1:
-    st.subheader("📈 Distribuição de Temperatura do Ar por Tipo de Máquina")
-    fig1, ax1 = plt.subplots()
-    sns.boxplot(data=data, x='Type', y='Air temperature [K]', ax=ax1)
-    st.pyplot(fig1)
-
-# Gráfico 2: Rotational speed vs Torque colorido por Machine failure
-with col2:
-    st.subheader("📉 Velocidade Rotacional vs Torque (Colorido por Falha)")
-    fig2, ax2 = plt.subplots()
-    sns.scatterplot(data=data, x='Rotational speed [rpm]', y='Torque [Nm]', hue='Machine failure', palette='coolwarm', ax=ax2)
-    st.pyplot(fig2)
 
 # Expansor para visualização da matriz de correlação
 with st.expander("Veja mais análises de correlação"):
-    st.subheader("🔍 Matriz de Correlação")
-    fig3, ax3 = plt.subplots(figsize=(10, 8))
-    correlation_matrix = data.drop(columns=['UDI', 'Product ID', 'Type']).corr()  # Removendo colunas não numéricas
-    sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', ax=ax3)
-    st.pyplot(fig3)
+    # Análise Exploratória dos Dados
+    st.header("📊 Análise Exploratória dos Dados")
+
+    # Dividir gráficos em colunas para melhor organização
+    col1, col2 = st.columns(2)
+
+    # Gráfico 1: Distribuição de temperatura do ar em função do tipo de máquina
+    with col1:
+        st.subheader("📈 Distribuição de Temperatura do Ar por Tipo de Máquina")
+        fig1, ax1 = plt.subplots()
+        sns.boxplot(data=data, x='Type', y='Air temperature [K]', ax=ax1)
+        st.pyplot(fig1)
+
+    # Gráfico 2: Rotational speed vs Torque colorido por Machine failure
+    with col2:
+        st.subheader("📉 Velocidade Rotacional vs Torque (Colorido por Falha)")
+        fig2, ax2 = plt.subplots()
+        sns.scatterplot(data=data, x='Rotational speed [rpm]', y='Torque [Nm]', hue='Machine failure', palette='coolwarm', ax=ax2)
+        st.pyplot(fig2)
