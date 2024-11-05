@@ -29,12 +29,24 @@ final_classifiers = {path.split('_')[-1].split('.')[0]: joblib.load(path) for pa
 # Função para fazer predição
 def predict_failure(input_data):
     try:
-        # Criar um DataFrame com os nomes das colunas que o modelo espera
-        columns = ['Type_encoded', 'Air temperature [K]', 'Process temperature [K]', 'Rotational speed [rpm]', 'Torque [Nm]', 'Tool wear [min]']
-        input_df = pd.DataFrame(input_data, columns=columns)
+        # Criar um DataFrame com os nomes das colunas que vêm do site
+        input_columns = ['Type_encoded', 'Air temperature [K]', 'Process temperature [K]', 'Rotational speed [rpm]', 'Torque [Nm]', 'Tool wear [min]']
+        input_df = pd.DataFrame(input_data, columns=input_columns)
+
+        # Mapear os nomes das colunas para o formato que o modelo espera
+        column_mapping = {
+            'Air temperature [K]': 'Air_temperature_K',
+            'Process temperature [K]': 'Process_temperature_K',
+            'Rotational speed [rpm]': 'Rotational_speed_rpm',
+            'Torque [Nm]': 'Torque_Nm',
+            'Tool wear [min]': 'Tool_wear_min'
+        }
+        
+        # Renomear as colunas do DataFrame para os nomes que o modelo espera
+        input_df.rename(columns=column_mapping, inplace=True)
 
         # Aplicar o scaler apenas nas colunas contínuas (sem incluir o 'Type_encoded')
-        continuous_columns = ['Air temperature [K]', 'Process temperature [K]', 'Rotational speed [rpm]', 'Torque [Nm]', 'Tool wear [min]']
+        continuous_columns = ['Air_temperature_K', 'Process_temperature_K', 'Rotational_speed_rpm', 'Torque_Nm', 'Tool_wear_min']
         input_df[continuous_columns] = scaler.transform(input_df[continuous_columns])
 
         # Fazer a previsão para cada classificador e armazenar os resultados
@@ -48,7 +60,6 @@ def predict_failure(input_data):
         return falhas if falhas else ["Sem falhas detectadas"]
     except Exception as e:
         return [f"Erro ao fazer a previsão: {e}"]
-
 # Código do aplicativo Streamlit
 import streamlit as st
 import base64
