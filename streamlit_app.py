@@ -44,7 +44,7 @@ def predict_failure(input_data):
         falhas = [label for label, pred in predictions.items() if pred == 1]
         return falhas if falhas else ["Sem falhas detectadas"]
     except Exception as e:
-        return [f"Erro ao fazer a previsão: {e}"]
+        return [f"Erro ao fazer a previsão: {e}"]
 
 # Código do aplicativo Streamlit
 import streamlit as st
@@ -61,6 +61,7 @@ logo_base64 = base64.b64encode(open(logo_path, "rb").read()).decode()
 
 # Configurações de estilo personalizado com CSS
 st.markdown(
+
            """
     <style>
     .header-container {
@@ -112,7 +113,6 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-
 # Cabeçalho com logotipo e título
 st.markdown(
     f"""
@@ -123,6 +123,7 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
 # Adicione um espaço para evitar que o conteúdo inicial fique atrás do cabeçalho fixo
 st.markdown("<div style='margin-top: 80px;'></div>", unsafe_allow_html=True)
 
