@@ -131,7 +131,7 @@ if st.button("🔍 Prever Falha"):
     try:
         # Fazendo a previsão
         prediction = model.predict(X_input)
-        resultado = "Falha" if prediction >= 0.1 else "Sem Falha"
+        resultado = "Falha" if prediction >= 0.05 else "Sem Falha"
         
         # Exibindo o resultado em um cartão de destaque
         st.markdown(
