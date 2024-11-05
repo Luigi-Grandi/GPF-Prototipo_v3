@@ -27,7 +27,6 @@ model_paths = [
 final_classifiers = {path.split('_')[-1].split('.')[0]: joblib.load(path) for path in model_paths}
 
 # Função para fazer predição
-# Função para fazer predição
 def predict_failure(input_data):
     try:
         # Criar um DataFrame com os nomes das colunas que o modelo espera
