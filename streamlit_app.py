@@ -161,7 +161,7 @@ if st.button("🔍 Prever Falha"):
 # Expansor para visualização da matriz de correlação
 with st.expander("Veja mais análises de correlação"):
     # Análise Exploratória dos Dados
-    st.header("📊 Análise Exploratória dos Dados")
+    st.header("📊 Análise Geral dos Dados")
 
     # Dividir gráficos em colunas para melhor organização
     col1, col2 = st.columns(2)
