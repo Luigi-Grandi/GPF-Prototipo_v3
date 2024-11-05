@@ -7,7 +7,6 @@ from sklearn.preprocessing import LabelEncoder, StandardScaler, OneHotEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.utils.class_weight import compute_class_weight
 from sklearn.metrics import classification_report, hamming_loss, f1_score
-import catboost
 from catboost import CatBoostClassifier
 import numpy as np
 
