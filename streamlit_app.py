@@ -30,11 +30,11 @@ final_classifiers = {path.split('_')[-1].split('.')[0]: joblib.load(path) for pa
 def predict_failure(input_data):
     try:
         # Criar um DataFrame com os nomes das colunas que o modelo espera
-        columns = ['Type_encoded', 'Air temperature [K]', 'Process temperature [K]', 'Rotational speed [rpm]', 'Torque [Nm]', 'Tool wear [min]']
+        columns = ['Type_encoded', 'Air_temperature_K', 'Process_temperature_K', 'Rotational_speed_rpm', 'Torque_Nm', 'Tool_wear_min']
         input_df = pd.DataFrame(input_data, columns=columns)
         
         # Aplicar o scaler apenas nas colunas contínuas
-        continuous_columns = ['Air temperature [K]', 'Process temperature [K]', 'Rotational speed [rpm]', 'Torque [Nm]', 'Tool wear [min]']
+        continuous_columns = ['Air_temperature_K', 'Process_temperature_K', 'Rotational_speed_rpm', 'Torque_Nm', 'Tool_wear_min']
         input_df[continuous_columns] = scaler.transform(input_df[continuous_columns])
         
         predictions = {}
@@ -44,7 +44,7 @@ def predict_failure(input_data):
         falhas = [label for label, pred in predictions.items() if pred == 1]
         return falhas if falhas else ["Sem falhas detectadas"]
     except Exception as e:
-        return [f"Erro ao fazer a previsão: {e}"]
+        return [f"Erro ao fazer a previsão: {e}"]
 
 # Código do aplicativo Streamlit
 import streamlit as st
