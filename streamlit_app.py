@@ -48,7 +48,7 @@ def predict_failure(input_data):
         falhas = [label for label, pred in predictions.items() if pred == 1]
         return falhas if falhas else ["Sem falhas detectadas"]
     except Exception as e:
-        return [f"Erro ao fazer a previsão: {e}"]
+        return [f"Erro ao fazer a previsão: {e}"]
 
 # Código do aplicativo Streamlit
 import streamlit as st
