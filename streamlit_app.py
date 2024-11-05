@@ -16,6 +16,16 @@ le_type = preprocessing_components['label_encoder_type']
 scaler = preprocessing_components['scaler']
 ohe = preprocessing_components['one_hot_encoder']
 
+# Carregar os classificadores individuais
+model_paths = [
+    'modelo_catboost_falhas_Failure_Type_HDF.joblib',
+    'modelo_catboost_falhas_Failure_Type_OSF.joblib',
+    'modelo_catboost_falhas_Failure_Type_PWF.joblib',
+    'modelo_catboost_falhas_Failure_Type_RNF.joblib',
+    'modelo_catboost_falhas_Failure_Type_TWF.joblib'
+]
+final_classifiers = {path.split('_')[-1].split('.')[0]: joblib.load(path) for path in model_paths}
+
 # Função para fazer predição
 def predict_failure(input_data):
     try:
@@ -45,6 +55,7 @@ logo_base64 = base64.b64encode(open(logo_path, "rb").read()).decode()
 
 # Configurações de estilo personalizado com CSS
 st.markdown(
+
 
            """
     <style>
