@@ -30,11 +30,11 @@ final_classifiers = {path.split('_')[-1].split('.')[0]: joblib.load(path) for pa
 def predict_failure(input_data):
     try:
         # Criar um DataFrame com os nomes das colunas que o modelo espera
-        columns = ['Type_encoded', 'Air_temperature_K', 'Process_temperature_K', 'Rotational_speed_rpm', 'Torque_Nm', 'Tool_wear_min']
+        columns = ['Type_encoded', 'Air_temperature [K]', 'Process_temperature [K]', 'Rotational_speed [rpm]', 'Torque [Nm]', 'Tool_wear [min]']
         input_df = pd.DataFrame(input_data, columns=columns)
         
         # Aplicar o scaler apenas nas colunas contínuas
-        continuous_columns = ['Air_temperature_K', 'Process_temperature_K', 'Rotational_speed_rpm', 'Torque_Nm', 'Tool_wear_min']
+        continuous_columns = ['Air_temperature [K]', 'Process_temperature [K]', 'Rotational_speed [rpm]', 'Torque [Nm]', 'Tool_wear [min]']
         input_df[continuous_columns] = scaler.transform(input_df[continuous_columns])
         
         predictions = {}
