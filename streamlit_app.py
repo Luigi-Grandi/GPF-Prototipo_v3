@@ -27,20 +27,24 @@ model_paths = [
 final_classifiers = {path.split('_')[-1].split('.')[0]: joblib.load(path) for path in model_paths}
 
 # Função para fazer predição
+# Função para fazer predição
 def predict_failure(input_data):
     try:
         # Criar um DataFrame com os nomes das colunas que o modelo espera
         columns = ['Type_encoded', 'Air_temperature_K', 'Process_temperature_K', 'Rotational_speed_rpm', 'Torque_Nm', 'Tool_wear_min']
         input_df = pd.DataFrame(input_data, columns=columns)
-        
-        # Aplicar o scaler apenas nas colunas contínuas
+
+        # Aplicar o scaler apenas nas colunas contínuas (sem incluir o 'Type_encoded')
         continuous_columns = ['Air_temperature_K', 'Process_temperature_K', 'Rotational_speed_rpm', 'Torque_Nm', 'Tool_wear_min']
         input_df[continuous_columns] = scaler.transform(input_df[continuous_columns])
-        
+
+        # Fazer a previsão para cada classificador e armazenar os resultados
         predictions = {}
         for label, clf in final_classifiers.items():
             prediction = clf.predict(input_df)
             predictions[label] = prediction[0]
+
+        # Filtrar os tipos de falhas detectadas
         falhas = [label for label, pred in predictions.items() if pred == 1]
         return falhas if falhas else ["Sem falhas detectadas"]
     except Exception as e:
