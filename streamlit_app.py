@@ -36,6 +36,7 @@ st.markdown(
         max-width: 120px; /* Ajuste o tamanho do logotipo */
         height: auto; /* Mantém a proporção da imagem */
         margin-right: 10px;
+        border-radius: 10px;
     }
     .header-container h1 {
         color: #FFFFFF;
@@ -51,6 +52,7 @@ st.markdown(
             max-width: 40px; /* Ajuste o tamanho do logotipo */
             height: auto; /* Mantém a proporção da imagem */
             margin-right: 10px;
+            border-radius: 10px;
         }
         
     }
