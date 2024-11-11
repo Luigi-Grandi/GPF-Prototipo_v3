@@ -5,23 +5,45 @@ import joblib
 import seaborn as sns
 import matplotlib.pyplot as plt
 import base64
+from sklearn.base import clone
+from sklearn.multioutput import ClassifierChain
+from xgboost import XGBClassifier
 
 # Definição da classe personalizada WeightedClassifierChain
 class WeightedClassifierChain(ClassifierChain):
     def _init_(self, base_estimator, order='random', random_state=None, weights=None):
+        """
+        Classe personalizada que herda de ClassifierChain e permite definir scale_pos_weight individualmente para cada classe.
+
+        Parameters:
+        - base_estimator: O estimador base a ser usado para cada classe.
+        - order: A ordem das classes na cadeia ('random' ou 'sequential').
+        - random_state: Controle da aleatoriedade para reproducibilidade.
+        - weights: Lista de scale_pos_weight para cada classe.
+        """
         super()._init_(base_estimator=base_estimator, order=order, random_state=random_state)
-        self.weights = weights
+        self.weights = weights  # Lista de scale_pos_weight para cada classe
 
     def fit(self, X, Y, **fit_params):
+        """
+        Ajusta o modelo às features X e ao target Y.
+
+        Parameters:
+        - X: Features de entrada.
+        - Y: Targets multilabel.
+        - fit_params: Parâmetros adicionais para o método fit (por exemplo, sample_weight).
+        """
         if self.weights is None:
             raise ValueError("Weights must be provided for each class.")
         if len(self.weights) != Y.shape[1]:
             raise ValueError("Number of weights must match number of classes.")
 
+        # Inicializar os estimadores com scale_pos_weight definido para cada classe
         self.estimators_ = [clone(self.base_estimator) for _ in range(Y.shape[1])]
         for i, estimator in enumerate(self.estimators_):
             estimator.set_params(scale_pos_weight=self.weights[i])
 
+        # Chamar o método fit da classe base com os parâmetros adicionais
         return super().fit(X, Y, **fit_params)
 
 # Carregar a imagem do logotipo
@@ -29,7 +51,11 @@ logo_path = "data/logo.jpg"  # Caminho para a imagem do logotipo
 logo_ext = "jpg"  # Extensão do logotipo
 
 # Codificar a imagem do logotipo em Base64
-logo_base64 = base64.b64encode(open(logo_path, "rb").read()).decode()
+try:
+    with open(logo_path, "rb") as image_file:
+        logo_base64 = base64.b64encode(image_file.read()).decode()
+except FileNotFoundError:
+    st.error(f"Logo não encontrado em {logo_path}. Verifique o caminho do arquivo.")
 
 # Configurações de estilo personalizado com CSS
 st.markdown(
@@ -104,13 +130,26 @@ st.markdown("<div style='margin-top: 80px;'></div>", unsafe_allow_html=True)
 # Carregar o pipeline salvo (inclui scaler e modelo)
 @st.cache_resource
 def load_pipeline():
-    pipeline = joblib.load('model_pipeline.joblib')
-    return pipeline
+    try:
+        pipeline = joblib.load('model_pipeline.joblib')
+        return pipeline
+    except FileNotFoundError:
+        st.error("Arquivo 'model_pipeline.joblib' não encontrado. Verifique o caminho e tente novamente.")
+    except Exception as e:
+        st.error(f"Erro ao carregar o pipeline: {e}")
 
 pipeline = load_pipeline()
 
+# Verificar se o pipeline foi carregado corretamente antes de prosseguir
+if pipeline is None:
+    st.stop()
+
 # Carregar o arquivo CSV para análises adicionais (opcional)
-data = pd.read_csv('data/galds.csv')
+try:
+    data = pd.read_csv('data/galds.csv')
+except FileNotFoundError:
+    st.error("Arquivo 'galds.csv' não encontrado em 'data/galds.csv'. Verifique o caminho do arquivo.")
+    data = pd.DataFrame()
 
 # Título e introdução do aplicativo
 st.title("🔧 Dashboard da Previsão de Falhas de Máquina")
@@ -175,50 +214,53 @@ if st.button("🔍 Prever Falhas"):
         st.error(f"Erro ao fazer a previsão: {e}")
 
 # Expansor para visualização da matriz de correlação
-with st.expander("Veja mais análises de correlação"):
-    # Análise Exploratória dos Dados
-    st.header("📊 Análise Geral dos Dados")
+if not data.empty:
+    with st.expander("Veja mais análises de correlação"):
+        # Análise Exploratória dos Dados
+        st.header("📊 Análise Geral dos Dados")
 
-    # Dividir gráficos em colunas para melhor organização
-    col1, col2 = st.columns(2)
+        # Dividir gráficos em colunas para melhor organização
+        col1, col2 = st.columns(2)
 
-    # Gráfico 1: Distribuição de temperatura do ar em função do tipo de máquina
-    with col1:
-        st.subheader("📈 Distribuição de Temperatura do Ar por Tipo de Máquina")
-        fig1, ax1 = plt.subplots()
-        sns.boxplot(data=data, x='Type', y='Air temperature [K]', ax=ax1)
-        st.pyplot(fig1)
+        # Gráfico 1: Distribuição de temperatura do ar em função do tipo de máquina
+        with col1:
+            st.subheader("📈 Distribuição de Temperatura do Ar por Tipo de Máquina")
+            fig1, ax1 = plt.subplots()
+            sns.boxplot(data=data, x='Type', y='Air temperature [K]', ax=ax1)
+            st.pyplot(fig1)
 
-    # Gráfico 2: Rotational speed vs Torque colorido por Machine failure
-    with col2:
-        st.subheader("📉 Velocidade Rotacional vs Torque (Colorido por Falha)")
-        fig2, ax2 = plt.subplots()
-        sns.scatterplot(data=data, x='Rotational speed [rpm]', y='Torque [Nm]', hue='Machine failure', palette='coolwarm', ax=ax2)
-        st.pyplot(fig2)
+        # Gráfico 2: Rotational speed vs Torque colorido por Machine failure
+        with col2:
+            st.subheader("📉 Velocidade Rotacional vs Torque (Colorido por Falha)")
+            fig2, ax2 = plt.subplots()
+            sns.scatterplot(data=data, x='Rotational speed [rpm]', y='Torque [Nm]', hue='Machine failure', palette='coolwarm', ax=ax2)
+            st.pyplot(fig2)
 
 # Análises adicionais (opcional)
-with st.expander("Análises Adicionais"):
-    st.header("🔍 Análises Complementares")
+if not data.empty:
+    with st.expander("Análises Adicionais"):
+        st.header("🔍 Análises Complementares")
 
-    # Exemplo: Distribuição das classes de falha
-    st.subheader("📊 Distribuição das Classes de Falha")
-    # Como estamos fazendo predições em tempo real, podemos calcular a distribuição com base nas predições anteriores ou nos dados históricos
-    # Aqui, usarei os dados históricos
-    failure_columns = ['TWF', 'HDF', 'PWF', 'OSF', 'RNF']
-    failure_counts = data[failure_columns].sum()
-    st.bar_chart(failure_counts)
+        # Exemplo: Distribuição das classes de falha
+        st.subheader("📊 Distribuição das Classes de Falha")
+        failure_columns = ['TWF', 'HDF', 'PWF', 'OSF', 'RNF']
+        failure_counts = data[failure_columns].sum()
+        st.bar_chart(failure_counts)
 
-    # Exemplo: Importância das Features
-    st.subheader("📈 Importância das Features")
-    # Obter a média das importâncias das features de todos os classificadores
-    feature_importances = np.mean([
-        estimator.feature_importances_ for estimator in pipeline.named_steps['classifier'].estimators_
-    ], axis=0)
-    feature_names = ['Type', 'Air temperature [K]', 'Process temperature [K]', 'Rotational speed [rpm]',
-                     'Torque [Nm]', 'Tool wear [min]', 'Temp_Diff', 'Power', 'Wear_Torque']
-    feature_importances_series = pd.Series(feature_importances, index=feature_names).sort_values(ascending=False)
-    fig3, ax3 = plt.subplots(figsize=(10,6))
-    sns.barplot(x=feature_importances_series, y=feature_importances_series.index, ax=ax3)
-    ax3.set_xlabel("Importância das Features")
-    ax3.set_ylabel("Features")
-    st.pyplot(fig3)
+        # Exemplo: Importância das Features
+        st.subheader("📈 Importância das Features")
+        # Obter a média das importâncias das features de todos os classificadores
+        try:
+            feature_importances = np.mean([
+                estimator.feature_importances_ for estimator in pipeline.named_steps['classifier'].estimators_
+            ], axis=0)
+            feature_names = ['Type', 'Air temperature [K]', 'Process temperature [K]', 'Rotational speed [rpm]',
+                             'Torque [Nm]', 'Tool wear [min]', 'Temp_Diff', 'Power', 'Wear_Torque']
+            feature_importances_series = pd.Series(feature_importances, index=feature_names).sort_values(ascending=False)
+            fig3, ax3 = plt.subplots(figsize=(10,6))
+            sns.barplot(x=feature_importances_series, y=feature_importances_series.index, ax=ax3)
+            ax3.set_xlabel("Importância das Features")
+            ax3.set_ylabel("Features")
+            st.pyplot(fig3)
+        except Exception as e:
+            st.error(f"Erro ao calcular a importância das features: {e}")
