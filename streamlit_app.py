@@ -199,10 +199,12 @@ def fazer_previsao(row, linha_atual):
     # Exibir o resultado
     result_div.markdown(
         f"""
-        <div style="padding:10px; border-radius: 25px; background-color: {'#cb0000' if resultado == 'Falha' else '#26b500'};">
+        <div style="padding:10px; border-radius: 25px; background-color: {'#cb0000' if resultado == 'Falha' else '#26b500'}; position: relative;">
             <h3 style="text-align: center; color: white;">Resultado da Previsão</h3>
             <p style="text-align: center; font-size: 20px; font-weight: bold;">{resultado}</p>
-            <p style="text-align: align-right; font-size: 15px; font-weight: bold;">Instancia: {linha_atual + 1}</p>
+            <p style="font-size: 15px; font-weight: bold; position: absolute; bottom: 10px; right: 10px; margin: 0;">
+                Instancia: {linha_atual + 1}
+            </p> 
         </div>
         """,
         unsafe_allow_html=True
