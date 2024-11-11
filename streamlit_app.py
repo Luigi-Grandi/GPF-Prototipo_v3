@@ -259,3 +259,4 @@ for index, row in data.iterrows():
     # Atualizar o gráfico no Streamlit
     chart_placeholder.pyplot(fig)
     fazer_previsao(row, index)
+    time.sleep(3)
