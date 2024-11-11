@@ -47,7 +47,7 @@ class WeightedClassifierChain(ClassifierChain):
         return super().fit(X, Y, **fit_params)
 
 # Definição das classes de falha
-failure_classes = ['TWF', 'HDF', 'PWF', 'OSF', 'RNF']
+failure_classes = ['Desgaste de Ferramenta', 'Falha de Dissipação de Calor', 'Falha de Potência', 'Falha de Esforço Excessivo', 'Falha Geral']
 
 # Carregar a imagem do logotipo
 logo_path = "data/logo.jpg"  # Caminho para a imagem do logotipo
