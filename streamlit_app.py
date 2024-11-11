@@ -177,14 +177,11 @@ data = pd.read_csv('data/galds.csv')
 type_mapping = {"L": 0, "M": 1, "H": 2}
 
 
-# Configuração do gráfico interativo
-st.subheader("📉 Monitoramento Contínuo de Previsão de Falhas")
-prediction_fig, prediction_ax = plt.subplots()
-predictions = []  # Lista para armazenar os resultados de cada previsão
-indices = []  # Lista para armazenar os índices (ou instâncias) das previsões
+# Espaço reservado para o gráfico
+chart_placeholder = st.empty()
 
-# Função para fazer a previsão e atualizar o gráfico
-def fazer_previsao(row, linha_atual):
+# Função para fazer a previsão e retornar o resultado
+def fazer_previsao(row):
     # Preparar os dados da linha
     type_encoded = type_mapping[row['Type']]
     air_temp = row['Air temperature [K]']
@@ -200,35 +197,31 @@ def fazer_previsao(row, linha_atual):
     X_input = X_input.reshape((1, 10, input_data_scaled.shape[1]))
 
     # Fazer a previsão
-    prediction = model.predict(X_input)[0][0]  # Captura o valor da previsão
-    resultado = "Falha" if prediction >= 0.05 else "Sem Falha"
-    
-    # Exibir o resultado
-    result_div.markdown(
-        f"""
-        <div style="margin: 20px; padding:10px; border-radius: 25px; background-color: {'#cb0000' if resultado == 'Falha' else '#26b500'}; position: relative;">
-            <h3 style="text-align: center; color: white;">Resultado da Previsão</h3>
-            <p style="text-align: center; font-size: 20px; font-weight: bold;">{resultado}</p>
-            <p style="font-size: 10px; font-weight: bold; position: absolute; bottom: 10px; right: 20px; margin: 0;">
-                Instancia: {linha_atual + 1}
-            </p> 
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    prediction = model.predict(X_input)
+    return prediction[0][0]
 
-    # Adiciona a previsão e o índice ao gráfico
-    predictions.append(prediction)
-    indices.append(linha_atual + 1)
-    
-    # Limpa e redesenha o gráfico
-    prediction_ax.clear()
-    prediction_ax.plot(indices, predictions, marker='o', linestyle='-', color='b')
-    prediction_ax.set_title("Evolução das Previsões de Falha")
-    prediction_ax.set_xlabel("Instância")
-    prediction_ax.set_ylabel("Valor da Previsão")
-    prediction_ax.grid()
-    st.pyplot(prediction_fig)
+# Loop para realizar previsões contínuas e atualizar o gráfico
+predictions = []
+for index, row in data.iterrows():
+    prediction_value = fazer_previsao(row)
+    predictions.append(prediction_value)
+
+    # Limitar as previsões a 10 pontos para manter o gráfico legível
+    if len(predictions) > 10:
+        predictions.pop(0)
+
+    # Atualizar o gráfico com os novos valores
+    fig, ax = plt.subplots()
+    ax.plot(predictions, marker='o', color='blue')
+    ax.set_title("Previsões de Falhas ao Longo do Tempo")
+    ax.set_xlabel("Instância")
+    ax.set_ylabel("Probabilidade de Falha")
+
+    # Atualizar o gráfico no Streamlit
+    chart_placeholder.pyplot(fig)
+
+    # Aguardar alguns segundos antes da próxima previsão
+    time.sleep(3)
 
 # Placeholder para exibir o resultado em tempo real
 result_div = st.empty()
@@ -237,4 +230,4 @@ result_div = st.empty()
 with st.expander("Analise Continua de Máquina"):
     for index, row in data.iterrows():
         fazer_previsao(row, index)
-        time.sleep(3)  # Espera de 3 segundos entre as previsões
+        #time.sleep(3)  # Espera de 3 segundos entre as previsões
