@@ -46,6 +46,9 @@ class WeightedClassifierChain(ClassifierChain):
         # Chamar o método fit da classe base com os parâmetros adicionais
         return super().fit(X, Y, **fit_params)
 
+# Definição das classes de falha
+failure_classes = ['TWF', 'HDF', 'PWF', 'OSF', 'RNF']
+
 # Carregar a imagem do logotipo
 logo_path = "data/logo.jpg"  # Caminho para a imagem do logotipo
 logo_ext = "jpg"  # Extensão do logotipo
@@ -56,6 +59,7 @@ try:
         logo_base64 = base64.b64encode(image_file.read()).decode()
 except FileNotFoundError:
     st.error(f"Logo não encontrado em {logo_path}. Verifique o caminho do arquivo.")
+    logo_base64 = ""  # Definir como string vazia para evitar erros posteriores
 
 # Configurações de estilo personalizado com CSS
 st.markdown(
@@ -183,11 +187,8 @@ if st.button("🔍 Prever Falhas"):
         y_pred = pipeline.predict(input_data)
         # y_pred é um array binário indicando a presença de cada falha
 
-        # Obter os nomes das classes
-        classes = pipeline.named_steps['classifier'].classes_
-
-        # Mapear as predições para os nomes das classes
-        predicted_failures = [cls for cls, pred in zip(classes, y_pred[0]) if pred == 1]
+        # Usar a lista manual de classes
+        predicted_failures = [cls for cls, pred in zip(failure_classes, y_pred[0]) if pred == 1]
 
         # Exibindo o resultado
         if predicted_failures:
@@ -249,8 +250,8 @@ if not data.empty:
 
         # Exemplo: Importância das Features
         st.subheader("📈 Importância das Features")
-        # Obter a média das importâncias das features de todos os classificadores
         try:
+            # Obter a média das importâncias das features de todos os classificadores
             feature_importances = np.mean([
                 estimator.feature_importances_ for estimator in pipeline.named_steps['classifier'].estimators_
             ], axis=0)
