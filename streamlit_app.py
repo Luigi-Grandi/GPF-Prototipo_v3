@@ -213,21 +213,87 @@ with st.expander("Analise Continua de Máquina: "):
             unsafe_allow_html=True
         )
 
-    # Exibir valores de entrada em duas colunas
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown(f"**Type Encoded:** {type_encoded}")
-        st.markdown(f"**Air Temperature [K]:** {air_temp}")
-        st.markdown(f"**Process Temperature [K]:** {process_temp}")
-    with col2:
-        st.markdown(f"**Rotational Speed [rpm]:** {rot_speed}")
-        st.markdown(f"**Torque [Nm]:** {torque}")
-        st.markdown(f"**Tool Wear [min]:** {tool_wear}")
-
     # Placeholder para exibir o resultado em tempo real
     result_div = st.empty()
-    # Espaço reservado para o gráfico
-    chart_placeholder = st.empty()
+# Placeholder para o gráfico de previsões e valores dos parâmetros
+chart_placeholder = st.empty()
+
+# Listas para armazenar dados para gráficos de cada parâmetro
+predictions = []
+air_temp_values, process_temp_values = [], []
+rot_speed_values, torque_values, tool_wear_values = [], [], []
+
+# Loop para realizar previsões contínuas e atualizar gráficos
+for index, row in data.iterrows():
+    prediction_value = fazer_previsao_graph(row)
+    predictions.append(prediction_value)
+
+    # Adicionando valores dos parâmetros para os gráficos
+    air_temp_values.append(row['Air temperature [K]'])
+    process_temp_values.append(row['Process temperature [K]'])
+    rot_speed_values.append(row['Rotational speed [rpm]'])
+    torque_values.append(row['Torque [Nm]'])
+    tool_wear_values.append(row['Tool wear [min]'])
+
+    # Limitando o número de pontos mostrados nos gráficos para manter a legibilidade
+    if len(predictions) > 10:
+        predictions.pop(0)
+        air_temp_values.pop(0)
+        process_temp_values.pop(0)
+        rot_speed_values.pop(0)
+        torque_values.pop(0)
+        tool_wear_values.pop(0)
+
+    # Gráfico de previsões
+    fig_predictions, ax_predictions = plt.subplots()
+    ax_predictions.plot(predictions, marker='o', color='blue')
+    ax_predictions.set_title("Previsões de Falhas ao Longo do Tempo")
+    ax_predictions.set_xlabel("Instância")
+    ax_predictions.set_ylabel("Probabilidade de Falha")
+    chart_placeholder.pyplot(fig_predictions)
+
+    # Gráficos para cada parâmetro em colunas
+    col1, col2 = st.columns(2)
+
+    with col1:
+        fig_air_temp, ax_air_temp = plt.subplots()
+        ax_air_temp.plot(air_temp_values, marker='o', color='orange')
+        ax_air_temp.set_title("Temperatura do Ar (K)")
+        ax_air_temp.set_xlabel("Instância")
+        ax_air_temp.set_ylabel("Air Temp [K]")
+        col1.pyplot(fig_air_temp)
+
+        fig_rot_speed, ax_rot_speed = plt.subplots()
+        ax_rot_speed.plot(rot_speed_values, marker='o', color='green')
+        ax_rot_speed.set_title("Velocidade Rotacional (rpm)")
+        ax_rot_speed.set_xlabel("Instância")
+        ax_rot_speed.set_ylabel("Rotational Speed [rpm]")
+        col1.pyplot(fig_rot_speed)
+
+    with col2:
+        fig_process_temp, ax_process_temp = plt.subplots()
+        ax_process_temp.plot(process_temp_values, marker='o', color='purple')
+        ax_process_temp.set_title("Temperatura do Processo (K)")
+        ax_process_temp.set_xlabel("Instância")
+        ax_process_temp.set_ylabel("Process Temp [K]")
+        col2.pyplot(fig_process_temp)
+
+        fig_torque, ax_torque = plt.subplots()
+        ax_torque.plot(torque_values, marker='o', color='red')
+        ax_torque.set_title("Torque (Nm)")
+        ax_torque.set_xlabel("Instância")
+        ax_torque.set_ylabel("Torque [Nm]")
+        col2.pyplot(fig_torque)
+
+    with col1:
+        fig_tool_wear, ax_tool_wear = plt.subplots()
+        ax_tool_wear.plot(tool_wear_values, marker='o', color='brown')
+        ax_tool_wear.set_title("Desgaste da Ferramenta (min)")
+        ax_tool_wear.set_xlabel("Instância")
+        ax_tool_wear.set_ylabel("Tool Wear [min]")
+        col1.pyplot(fig_tool_wear)
+
+    time.sleep(3)  # Pausa de 3 segundos para atualização contínua
 
 
 # Função para fazer a previsão e retornar o resultado
