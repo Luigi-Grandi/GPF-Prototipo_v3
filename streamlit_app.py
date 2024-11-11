@@ -194,7 +194,7 @@ def fazer_previsao(row):
 
     # Fazer a previsão
     prediction = model.predict(X_input)
-    resultado = "Falha" if prediction >= 0.05 else "Sem Falha"
+    resultado = "Falha" if prediction >= 0.1 else "Sem Falha"
     
     # Exibir o resultado
     st.markdown(
