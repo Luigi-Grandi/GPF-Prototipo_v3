@@ -233,8 +233,8 @@ with st.expander("Analise Continua de Máquina: "):
 
     # Placeholder para exibir o resultado em tempo real
     result_div = st.empty()
-# Placeholder para o gráfico de previsões e valores dos parâmetros
-chart_placeholder = st.empty()
+    # Placeholder para o gráfico de previsões e valores dos parâmetros
+    chart_placeholder = st.empty()
 
 # Listas para armazenar dados para gráficos de cada parâmetro
 predictions = []
