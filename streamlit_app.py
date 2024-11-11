@@ -7,6 +7,7 @@ import joblib
 import seaborn as sns
 import matplotlib.pyplot as plt
 import base64
+import time
 
 # Carregar a imagem do logotipo
 logo_path = "data/logo.jpg"  # Caminho para a imagem do logotipo
