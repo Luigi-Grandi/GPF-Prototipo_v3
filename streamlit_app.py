@@ -219,11 +219,6 @@ with st.expander("Analise Continua de Máquina: "):
     # Placeholder para exibir o resultado em tempo real
     result_div = st.empty()
 
-    # Loop para prever falhas a cada 3 segundos
-    for index, row in data.iterrows():
-        fazer_previsao(row, index)
-        time.sleep(3)  # Espera de 3 segundos entre as previsões"
-
 # Função para fazer a previsão e retornar o resultado
 def fazer_previsao_graph(row):
     # Preparar os dados da linha
@@ -263,6 +258,5 @@ for index, row in data.iterrows():
 
     # Atualizar o gráfico no Streamlit
     chart_placeholder.pyplot(fig)
-
-    # Aguardar alguns segundos antes da próxima previsão
-    time.sleep(3)
+    fazer_previsao(row, index)
+    time.sleep(3)  # Espera de 3 segundos entre as previsões"
