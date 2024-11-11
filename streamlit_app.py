@@ -177,7 +177,13 @@ data = pd.read_csv('data/galds.csv')
 type_mapping = {"L": 0, "M": 1, "H": 2}
 
 with st.expander("Analise Continua de Máquina: "):
-    # Função para fazer previsão em uma linha de dados
+        # Configuração do gráfico interativo
+    st.subheader("📉 Monitoramento Contínuo de Previsão de Falhas")
+    prediction_fig, prediction_ax = plt.subplots()
+    predictions = []  # Lista para armazenar os resultados de cada previsão
+    indices = []  # Lista para armazenar os índices (ou instâncias) das previsões
+
+    # Função para fazer a previsão e atualizar o gráfico
     def fazer_previsao(row, linha_atual):
         # Preparar os dados da linha
         type_encoded = type_mapping[row['Type']]
@@ -194,7 +200,7 @@ with st.expander("Analise Continua de Máquina: "):
         X_input = X_input.reshape((1, 10, input_data_scaled.shape[1]))
 
         # Fazer a previsão
-        prediction = model.predict(X_input)
+        prediction = model.predict(X_input)[0][0]  # Captura o valor da previsão
         resultado = "Falha" if prediction >= 0.05 else "Sem Falha"
         
         # Exibir o resultado
@@ -211,10 +217,24 @@ with st.expander("Analise Continua de Máquina: "):
             unsafe_allow_html=True
         )
 
+        # Adiciona a previsão e o índice ao gráfico
+        predictions.append(prediction)
+        indices.append(linha_atual + 1)
+        
+        # Limpa e redesenha o gráfico
+        prediction_ax.clear()
+        prediction_ax.plot(indices, predictions, marker='o', linestyle='-', color='b')
+        prediction_ax.set_title("Evolução das Previsões de Falha")
+        prediction_ax.set_xlabel("Instância")
+        prediction_ax.set_ylabel("Valor da Previsão")
+        prediction_ax.grid()
+        st.pyplot(prediction_fig)
+
     # Placeholder para exibir o resultado em tempo real
     result_div = st.empty()
 
-    # Loop para prever falhas a cada 3 segundos
-    for index, row in data.iterrows():
-        fazer_previsao(row, index)
-        time.sleep(3)  # Espera de 3 segundos entre as previsões
+    # Loop para prever falhas e atualizar o gráfico a cada 3 segundos
+    with st.expander("Analise Continua de Máquina"):
+        for index, row in data.iterrows():
+            fazer_previsao(row, index)
+            time.sleep(3)  # Espera de 3 segundos entre as previsões
