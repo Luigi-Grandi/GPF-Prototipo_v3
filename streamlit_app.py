@@ -200,7 +200,7 @@ with st.expander("Analise Continua de Máquina: "):
         # Exibir o resultado
         result_div.markdown(
             f"""
-            <div style="padding:10px; border-radius: 25px; background-color: {'#cb0000' if resultado == 'Falha' else '#26b500'}; position: relative;">
+            <div style="margin: 20px; padding:10px; border-radius: 25px; background-color: {'#cb0000' if resultado == 'Falha' else '#26b500'}; position: relative;">
                 <h3 style="text-align: center; color: white;">Resultado da Previsão</h3>
                 <p style="text-align: center; font-size: 20px; font-weight: bold;">{resultado}</p>
                 <p style="font-size: 10px; font-weight: bold; position: absolute; bottom: 10px; right: 20px; margin: 0;">
