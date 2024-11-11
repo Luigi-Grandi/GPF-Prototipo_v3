@@ -176,7 +176,25 @@ data = pd.read_csv('data/galds.csv')
 # Mapeamento dos tipos
 type_mapping = {"L": 0, "M": 1, "H": 2}
 
+# Função para fazer a previsão e retornar o resultado
+def fazer_previsao_graph(row):
+    # Preparar os dados da linha
+    type_encoded = type_mapping[row['Type']]
+    air_temp = row['Air temperature [K]']
+    process_temp = row['Process temperature [K]']
+    rot_speed = row['Rotational speed [rpm]']
+    torque = row['Torque [Nm]']
+    tool_wear = row['Tool wear [min]']
+    input_data = np.array([[type_encoded, air_temp, process_temp, rot_speed, torque, tool_wear]])
 
+    # Padronizar e preparar a entrada para o LSTM
+    input_data_scaled = scaler.transform(input_data)
+    X_input = np.tile(input_data_scaled, (10, 1))
+    X_input = X_input.reshape((1, 10, input_data_scaled.shape[1]))
+
+    # Fazer a previsão
+    prediction = model.predict(X_input)
+    return prediction[0][0]
 
 with st.expander("Analise Continua de Máquina: "):
     # Função para fazer previsão em uma linha de dados
@@ -294,27 +312,6 @@ for index, row in data.iterrows():
         col1.pyplot(fig_tool_wear)
 
     time.sleep(3)  # Pausa de 3 segundos para atualização contínua
-
-
-# Função para fazer a previsão e retornar o resultado
-def fazer_previsao_graph(row):
-    # Preparar os dados da linha
-    type_encoded = type_mapping[row['Type']]
-    air_temp = row['Air temperature [K]']
-    process_temp = row['Process temperature [K]']
-    rot_speed = row['Rotational speed [rpm]']
-    torque = row['Torque [Nm]']
-    tool_wear = row['Tool wear [min]']
-    input_data = np.array([[type_encoded, air_temp, process_temp, rot_speed, torque, tool_wear]])
-
-    # Padronizar e preparar a entrada para o LSTM
-    input_data_scaled = scaler.transform(input_data)
-    X_input = np.tile(input_data_scaled, (10, 1))
-    X_input = X_input.reshape((1, 10, input_data_scaled.shape[1]))
-
-    # Fazer a previsão
-    prediction = model.predict(X_input)
-    return prediction[0][0]
 
 # Loop para realizar previsões contínuas e atualizar o gráfico
 predictions = []
