@@ -277,25 +277,37 @@ def fazer_previsao(row, linha_atual):
     tool_wear = row['Tool wear [min]']
     input_data = np.array([[type_encoded, air_temp, process_temp, rot_speed, torque, tool_wear]])
 
-    # Padronizar e preparar a entrada para o LSTM
-    input_data_scaled = scaler.transform(input_data)
-    X_input = np.tile(input_data_scaled, (10, 1))
-    X_input = X_input.reshape((1, 10, input_data_scaled.shape[1]))
+    try:
+        # Fazendo a previsão multilabel
+        y_pred = pipeline.predict(input_data)
+        # y_pred é um array binário indicando a presença de cada falha
 
-    # Fazer a previsão
-    prediction = model.predict(X_input)
-    resultado = "Falha" if prediction >= 0.05 else "Sem Falha"
-    
-    # Exibir o resultado
-    result_div.markdown(
-        f"""
-        <div style="padding:10px; border-radius:5px; background-color: {'#cb0000' if resultado == 'Falha' else '#26b500'};">
-            <h3 style="text-align: center; color: white;">Resultado da Previsão - Linha {linha_atual + 1}</h3>
-            <p style="text-align: center; font-size: 20px; font-weight: bold;">{resultado}</p>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+        # Usar a lista manual de classes
+        predicted_failures = [cls for cls, pred in zip(failure_classes, y_pred[0]) if pred == 1]
+
+        # Exibindo o resultado
+        if predicted_failures:
+            falhas = ', '.join(predicted_failures)
+            st.markdown(
+                f"""
+                <div style="padding:10px; border-radius:5px; background-color: #cb0000;">
+                    <h3 style="text-align: center; color: white;">Falhas Previstas</h3>
+                    <p style="text-align: center; font-size: 20px; font-weight: bold;">{falhas}</p>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+        else:
+            st.markdown(
+                f"""
+                <div style="padding:10px; border-radius:5px; background-color: #26b500;">
+                    <h3 style="text-align: center; color: white;">Sem Falhas Previstas</h3>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+    except Exception as e:
+        st.error(f"Erro ao fazer a previsão: {e}")
 
 # Placeholder para exibir o resultado em tempo real
 result_div = st.empty()
