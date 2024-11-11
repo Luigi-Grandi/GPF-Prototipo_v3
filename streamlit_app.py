@@ -1,13 +1,10 @@
 import streamlit as st
 import numpy as np
 import pandas as pd
-import tensorflow as tf
-from tensorflow.keras.models import load_model
 import joblib
 import seaborn as sns
 import matplotlib.pyplot as plt
 import base64
-import time
 
 # Carregar a imagem do logotipo
 logo_path = "data/logo.jpg"  # Caminho para a imagem do logotipo
@@ -18,8 +15,7 @@ logo_base64 = base64.b64encode(open(logo_path, "rb").read()).decode()
 
 # Configurações de estilo personalizado com CSS
 st.markdown(
-
-           """
+    """
     <style>
     .header-container {
         display: flex;
@@ -87,17 +83,14 @@ st.markdown(
 # Adicione um espaço para evitar que o conteúdo inicial fique atrás do cabeçalho fixo
 st.markdown("<div style='margin-top: 80px;'></div>", unsafe_allow_html=True)
 
-# Carregar o modelo LSTM previamente salvo
-model = load_model('my_model2.keras')
+# Carregar o pipeline salvo (inclui scaler e modelo)
+pipeline = joblib.load('model_pipeline.joblib')
 
-# Carregar o scaler salvo
-scaler = joblib.load('scaler.pkl')  # Supondo que você tenha salvo o scaler ao treinar o modelo
-
-# Carregar o arquivo CSV
+# Carregar o arquivo CSV para análises adicionais (opcional)
 data = pd.read_csv('data/galds.csv')
 
 # Título e introdução do aplicativo
-st.title("🔧 Dashboard da previsão de Falha de Máquina")
+st.title("🔧 Dashboard da Previsão de Falhas de Máquina")
 st.write("Bem-vindo ao sistema de previsão de falhas! Insira os dados da máquina e explore as análises gráficas.")
 
 # Menu lateral para as entradas do usuário
@@ -113,38 +106,48 @@ tool_wear = st.sidebar.number_input("Desgaste da Ferramenta [min]", min_value=0,
 type_mapping = {"L": 0, "M": 1, "H": 2}
 type_encoded = type_mapping[type_value]
 
+# Criação das novas features conforme engenharia de features do modelo
+temp_diff = process_temp - air_temp
+power = torque * rot_speed
+wear_torque = tool_wear * torque
 
-# Agrupando as entradas como array e padronizando usando o scaler treinado
-input_data = np.array([[type_encoded, air_temp, process_temp, rot_speed, torque, tool_wear]])
-
-# Verificar se o scaler foi carregado corretamente
-if scaler is not None:
-    input_data_scaled = scaler.transform(input_data)
-else:
-    st.error("Erro ao carregar o scaler. Verifique se 'scaler.pkl' está disponível.")
-
-# Preparando a entrada no formato de sequência esperado pelo LSTM (1, 10, número de features)
-time_steps = 10
-X_input = np.tile(input_data_scaled, (time_steps, 1))
-X_input = X_input.reshape((1, time_steps, input_data_scaled.shape[1]))
+# Agrupando as entradas como array
+input_data = np.array([[type_encoded, air_temp, process_temp, rot_speed, torque, tool_wear, temp_diff, power, wear_torque]])
 
 # Botão de previsão
-if st.button("🔍 Prever Falha"):
+if st.button("🔍 Prever Falhas"):
     try:
-        # Fazendo a previsão
-        prediction = model.predict(X_input)
-        resultado = "Falha" if prediction >= 0.05 else "Sem Falha"
-        
-        # Exibindo o resultado em um cartão de destaque
-        st.markdown(
-            f"""
-            <div style="padding:10px; border-radius:5px; background-color: {'#cb0000' if resultado == 'Falha' else '#26b500'};">
-                <h3 style="text-align: center; color: white;">Resultado da Previsão</h3>
-                <p style="text-align: center; font-size: 20px; font-weight: bold;">{resultado}</p>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+        # Fazendo a previsão multilabel
+        y_pred = pipeline.predict(input_data)
+        # y_pred é um array binário indicando a presença de cada falha
+
+        # Obter os nomes das classes
+        classes = pipeline.named_steps['classifier'].classes_
+
+        # Mapear as predições para os nomes das classes
+        predicted_failures = [cls for cls, pred in zip(classes, y_pred[0]) if pred == 1]
+
+        # Exibindo o resultado
+        if predicted_failures:
+            falhas = ', '.join(predicted_failures)
+            st.markdown(
+                f"""
+                <div style="padding:10px; border-radius:5px; background-color: #cb0000;">
+                    <h3 style="text-align: center; color: white;">Falhas Previstas</h3>
+                    <p style="text-align: center; font-size: 20px; font-weight: bold;">{falhas}</p>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+        else:
+            st.markdown(
+                f"""
+                <div style="padding:10px; border-radius:5px; background-color: #26b500;">
+                    <h3 style="text-align: center; color: white;">Sem Falhas Previstas</h3>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
     except Exception as e:
         st.error(f"Erro ao fazer a previsão: {e}")
 
@@ -170,145 +173,21 @@ with st.expander("Veja mais análises de correlação"):
         sns.scatterplot(data=data, x='Rotational speed [rpm]', y='Torque [Nm]', hue='Machine failure', palette='coolwarm', ax=ax2)
         st.pyplot(fig2)
 
-# Carregar o arquivo CSV
-data = pd.read_csv('data/galds.csv')
+# Análises adicionais (opcional)
+with st.expander("Análises Adicionais"):
+    st.header("🔍 Análises Complementares")
 
-# Mapeamento dos tipos
-type_mapping = {"L": 0, "M": 1, "H": 2}
+    # Exemplo: Distribuição das classes de falha
+    st.subheader("📊 Distribuição das Classes de Falha")
+    failure_counts = pd.DataFrame(y_pred, columns=pipeline.named_steps['classifier'].classes_).sum()
+    st.bar_chart(failure_counts)
 
-# Função para fazer a previsão e retornar o resultado
-def fazer_previsao_graph(row):
-    # Preparar os dados da linha
-    type_encoded = type_mapping[row['Type']]
-    air_temp = row['Air temperature [K]']
-    process_temp = row['Process temperature [K]']
-    rot_speed = row['Rotational speed [rpm]']
-    torque = row['Torque [Nm]']
-    tool_wear = row['Tool wear [min]']
-    input_data = np.array([[type_encoded, air_temp, process_temp, rot_speed, torque, tool_wear]])
-
-    # Padronizar e preparar a entrada para o LSTM
-    input_data_scaled = scaler.transform(input_data)
-    X_input = np.tile(input_data_scaled, (10, 1))
-    X_input = X_input.reshape((1, 10, input_data_scaled.shape[1]))
-
-    # Fazer a previsão
-    prediction = model.predict(X_input)
-    return prediction[0][0]
-
-with st.expander("Analise Continua de Máquina: "):
-    # Função para fazer previsão em uma linha de dados
-    def fazer_previsao(row, linha_atual):
-        # Preparar os dados da linha
-        type_encoded = type_mapping[row['Type']]
-        air_temp = row['Air temperature [K]']
-        process_temp = row['Process temperature [K]']
-        rot_speed = row['Rotational speed [rpm]']
-        torque = row['Torque [Nm]']
-        tool_wear = row['Tool wear [min]']
-        input_data = np.array([[type_encoded, air_temp, process_temp, rot_speed, torque, tool_wear]])
-
-        # Padronizar e preparar a entrada para o LSTM
-        input_data_scaled = scaler.transform(input_data)
-        X_input = np.tile(input_data_scaled, (10, 1))
-        X_input = X_input.reshape((1, 10, input_data_scaled.shape[1]))
-
-        # Fazer a previsão
-        prediction = model.predict(X_input)
-        resultado = "Falha" if prediction >= 0.05 else "Sem Falha"
-
-        # Exibir o resultado
-        result_div.markdown(
-            f"""
-            <div style="margin: 20px; padding:10px; border-radius: 25px; background-color: {'#cb0000' if resultado == 'Falha' else '#26b500'}; position: relative;">
-                <h3 style="text-align: center; color: white;">Resultado da Previsão</h3>
-                <p style="text-align: center; font-size: 20px; font-weight: bold;">{resultado}</p>
-                <p style="font-size: 10px; font-weight: bold; position: absolute; bottom: 10px; right: 20px; margin: 0;">
-                    Instancia: {linha_atual + 1}
-                </p> 
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-    # Placeholder para exibir o resultado em tempo real
-    result_div = st.empty()
-    # Placeholder para o gráfico de previsões e valores dos parâmetros
-    chart_placeholder = st.empty()
-
-# Listas para armazenar dados para gráficos de cada parâmetro
-predictions = []
-air_temp_values, process_temp_values = [], []
-rot_speed_values, torque_values, tool_wear_values = [], [], []
-
-# Loop para realizar previsões contínuas e atualizar gráficos
-for index, row in data.iterrows():
-    fazer_previsao(row, index)
-    prediction_value = fazer_previsao_graph(row)
-    predictions.append(prediction_value)
-
-    # Adicionando valores dos parâmetros para os gráficos
-    air_temp_values.append(row['Air temperature [K]'])
-    process_temp_values.append(row['Process temperature [K]'])
-    rot_speed_values.append(row['Rotational speed [rpm]'])
-    torque_values.append(row['Torque [Nm]'])
-    tool_wear_values.append(row['Tool wear [min]'])
-
-    # Limitando o número de pontos mostrados nos gráficos para manter a legibilidade
-    if len(predictions) > 10:
-        predictions.pop(0)
-        air_temp_values.pop(0)
-        process_temp_values.pop(0)
-        rot_speed_values.pop(0)
-        torque_values.pop(0)
-        tool_wear_values.pop(0)
-
-    # Gráfico de previsões
-    fig_predictions, ax_predictions = plt.subplots()
-    ax_predictions.plot(predictions, marker='o', color='blue')
-    ax_predictions.set_title("Previsões de Falhas ao Longo do Tempo")
-    ax_predictions.set_xlabel("Instância")
-    ax_predictions.set_ylabel("Probabilidade de Falha")
-    chart_placeholder.pyplot(fig_predictions)
-
-    # Gráficos para cada parâmetro em colunas
-    col1, col2 = st.columns(2)
-
-    with col1:
-        fig_air_temp, ax_air_temp = plt.subplots()
-        ax_air_temp.plot(air_temp_values, marker='o', color='orange')
-        ax_air_temp.set_title("Temperatura do Ar (K)")
-        ax_air_temp.set_xlabel("Instância")
-        ax_air_temp.set_ylabel("Air Temp [K]")
-        col1.pyplot(fig_air_temp)
-
-        fig_rot_speed, ax_rot_speed = plt.subplots()
-        ax_rot_speed.plot(rot_speed_values, marker='o', color='green')
-        ax_rot_speed.set_title("Velocidade Rotacional (rpm)")
-        ax_rot_speed.set_xlabel("Instância")
-        ax_rot_speed.set_ylabel("Rotational Speed [rpm]")
-        col1.pyplot(fig_rot_speed)
-
-    with col2:
-        fig_process_temp, ax_process_temp = plt.subplots()
-        ax_process_temp.plot(process_temp_values, marker='o', color='purple')
-        ax_process_temp.set_title("Temperatura do Processo (K)")
-        ax_process_temp.set_xlabel("Instância")
-        ax_process_temp.set_ylabel("Process Temp [K]")
-        col2.pyplot(fig_process_temp)
-
-        fig_torque, ax_torque = plt.subplots()
-        ax_torque.plot(torque_values, marker='o', color='red')
-        ax_torque.set_title("Torque (Nm)")
-        ax_torque.set_xlabel("Instância")
-        ax_torque.set_ylabel("Torque [Nm]")
-        col2.pyplot(fig_torque)
-
-    with col1:
-        fig_tool_wear, ax_tool_wear = plt.subplots()
-        ax_tool_wear.plot(tool_wear_values, marker='o', color='brown')
-        ax_tool_wear.set_title("Desgaste da Ferramenta (min)")
-        ax_tool_wear.set_xlabel("Instância")
-        ax_tool_wear.set_ylabel("Tool Wear [min]")
-        col1.pyplot(fig_tool_wear)
-    time.sleep(3)  # Pausa de 3 segundos para atualização contínua
+    # Exemplo: Importância das Features
+    st.subheader("📈 Importância das Features")
+    importances = pipeline.named_steps['classifier'].estimators_[0].feature_importances_
+    feature_names = ['Type', 'Air temperature [K]', 'Process temperature [K]', 'Rotational speed [rpm]',
+                     'Torque [Nm]', 'Tool wear [min]', 'Temp_Diff', 'Power', 'Wear_Torque']
+    feature_importances = pd.Series(importances, index=feature_names).sort_values(ascending=False)
+    fig3, ax3 = plt.subplots(figsize=(10,6))
+    sns.barplot(x=feature_importances, y=feature_importances.index, ax=ax3)
+    st.pyplot(fig3)
