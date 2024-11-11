@@ -180,48 +180,6 @@ type_mapping = {"L": 0, "M": 1, "H": 2}
 # Espaço reservado para o gráfico
 chart_placeholder = st.empty()
 
-# Função para fazer a previsão e retornar o resultado
-def fazer_previsao(row):
-    # Preparar os dados da linha
-    type_encoded = type_mapping[row['Type']]
-    air_temp = row['Air temperature [K]']
-    process_temp = row['Process temperature [K]']
-    rot_speed = row['Rotational speed [rpm]']
-    torque = row['Torque [Nm]']
-    tool_wear = row['Tool wear [min]']
-    input_data = np.array([[type_encoded, air_temp, process_temp, rot_speed, torque, tool_wear]])
-
-    # Padronizar e preparar a entrada para o LSTM
-    input_data_scaled = scaler.transform(input_data)
-    X_input = np.tile(input_data_scaled, (10, 1))
-    X_input = X_input.reshape((1, 10, input_data_scaled.shape[1]))
-
-    # Fazer a previsão
-    prediction = model.predict(X_input)
-    return prediction[0][0]
-
-# Loop para realizar previsões contínuas e atualizar o gráfico
-predictions = []
-for index, row in data.iterrows():
-    prediction_value = fazer_previsao(row)
-    predictions.append(prediction_value)
-
-    # Limitar as previsões a 10 pontos para manter o gráfico legível
-    if len(predictions) > 10:
-        predictions.pop(0)
-
-    # Atualizar o gráfico com os novos valores
-    fig, ax = plt.subplots()
-    ax.plot(predictions, marker='o', color='blue')
-    ax.set_title("Previsões de Falhas ao Longo do Tempo")
-    ax.set_xlabel("Instância")
-    ax.set_ylabel("Probabilidade de Falha")
-
-    # Atualizar o gráfico no Streamlit
-    chart_placeholder.pyplot(fig)
-
-    # Aguardar alguns segundos antes da próxima previsão
-    time.sleep(3)
 
 with st.expander("Analise Continua de Máquina: "):
     # Função para fazer previsão em uma linha de dados
@@ -265,3 +223,46 @@ with st.expander("Analise Continua de Máquina: "):
     for index, row in data.iterrows():
         fazer_previsao(row, index)
         time.sleep(3)  # Espera de 3 segundos entre as previsões"
+
+# Função para fazer a previsão e retornar o resultado
+def fazer_previsao_graph(row):
+    # Preparar os dados da linha
+    type_encoded = type_mapping[row['Type']]
+    air_temp = row['Air temperature [K]']
+    process_temp = row['Process temperature [K]']
+    rot_speed = row['Rotational speed [rpm]']
+    torque = row['Torque [Nm]']
+    tool_wear = row['Tool wear [min]']
+    input_data = np.array([[type_encoded, air_temp, process_temp, rot_speed, torque, tool_wear]])
+
+    # Padronizar e preparar a entrada para o LSTM
+    input_data_scaled = scaler.transform(input_data)
+    X_input = np.tile(input_data_scaled, (10, 1))
+    X_input = X_input.reshape((1, 10, input_data_scaled.shape[1]))
+
+    # Fazer a previsão
+    prediction = model.predict(X_input)
+    return prediction[0][0]
+
+# Loop para realizar previsões contínuas e atualizar o gráfico
+predictions = []
+for index, row in data.iterrows():
+    prediction_value = fazer_previsao_graph(row)
+    predictions.append(prediction_value)
+
+    # Limitar as previsões a 10 pontos para manter o gráfico legível
+    if len(predictions) > 10:
+        predictions.pop(0)
+
+    # Atualizar o gráfico com os novos valores
+    fig, ax = plt.subplots()
+    ax.plot(predictions, marker='o', color='blue')
+    ax.set_title("Previsões de Falhas ao Longo do Tempo")
+    ax.set_xlabel("Instância")
+    ax.set_ylabel("Probabilidade de Falha")
+
+    # Atualizar o gráfico no Streamlit
+    chart_placeholder.pyplot(fig)
+
+    # Aguardar alguns segundos antes da próxima previsão
+    time.sleep(3)
