@@ -177,9 +177,6 @@ data = pd.read_csv('data/galds.csv')
 type_mapping = {"L": 0, "M": 1, "H": 2}
 
 
-# Espaço reservado para o gráfico
-chart_placeholder = st.empty()
-
 
 with st.expander("Analise Continua de Máquina: "):
     # Função para fazer previsão em uma linha de dados
@@ -218,6 +215,9 @@ with st.expander("Analise Continua de Máquina: "):
 
     # Placeholder para exibir o resultado em tempo real
     result_div = st.empty()
+    # Espaço reservado para o gráfico
+    chart_placeholder = st.empty()
+
 
 # Função para fazer a previsão e retornar o resultado
 def fazer_previsao_graph(row):
@@ -259,4 +259,3 @@ for index, row in data.iterrows():
     # Atualizar o gráfico no Streamlit
     chart_placeholder.pyplot(fig)
     fazer_previsao(row, index)
-    time.sleep(3)  # Espera de 3 segundos entre as previsões"
