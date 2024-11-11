@@ -223,11 +223,45 @@ for index, row in data.iterrows():
     # Aguardar alguns segundos antes da próxima previsão
     time.sleep(3)
 
-# Placeholder para exibir o resultado em tempo real
-result_div = st.empty()
+with st.expander("Analise Continua de Máquina: "):
+    # Função para fazer previsão em uma linha de dados
+    def fazer_previsao(row, linha_atual):
+        # Preparar os dados da linha
+        type_encoded = type_mapping[row['Type']]
+        air_temp = row['Air temperature [K]']
+        process_temp = row['Process temperature [K]']
+        rot_speed = row['Rotational speed [rpm]']
+        torque = row['Torque [Nm]']
+        tool_wear = row['Tool wear [min]']
+        input_data = np.array([[type_encoded, air_temp, process_temp, rot_speed, torque, tool_wear]])
 
-# Loop para prever falhas e atualizar o gráfico a cada 3 segundos
-with st.expander("Analise Continua de Máquina"):
+        # Padronizar e preparar a entrada para o LSTM
+        input_data_scaled = scaler.transform(input_data)
+        X_input = np.tile(input_data_scaled, (10, 1))
+        X_input = X_input.reshape((1, 10, input_data_scaled.shape[1]))
+
+        # Fazer a previsão
+        prediction = model.predict(X_input)
+        resultado = "Falha" if prediction >= 0.05 else "Sem Falha"
+        
+        # Exibir o resultado
+        result_div.markdown(
+            f"""
+            <div style="margin: 20px; padding:10px; border-radius: 25px; background-color: {'#cb0000' if resultado == 'Falha' else '#26b500'}; position: relative;">
+                <h3 style="text-align: center; color: white;">Resultado da Previsão</h3>
+                <p style="text-align: center; font-size: 20px; font-weight: bold;">{resultado}</p>
+                <p style="font-size: 10px; font-weight: bold; position: absolute; bottom: 10px; right: 20px; margin: 0;">
+                    Instancia: {linha_atual + 1}
+                </p> 
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    # Placeholder para exibir o resultado em tempo real
+    result_div = st.empty()
+
+    # Loop para prever falhas a cada 3 segundos
     for index, row in data.iterrows():
         fazer_previsao(row, index)
-        #time.sleep(3)  # Espera de 3 segundos entre as previsões
+        time.sleep(3)  # Espera de 3 segundos entre as previsões"
