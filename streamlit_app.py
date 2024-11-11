@@ -310,27 +310,4 @@ for index, row in data.iterrows():
         ax_tool_wear.set_xlabel("Instância")
         ax_tool_wear.set_ylabel("Tool Wear [min]")
         col1.pyplot(fig_tool_wear)
-
     time.sleep(3)  # Pausa de 3 segundos para atualização contínua
-
-# Loop para realizar previsões contínuas e atualizar o gráfico
-predictions = []
-for index, row in data.iterrows():
-    prediction_value = fazer_previsao_graph(row)
-    predictions.append(prediction_value)
-
-    # Limitar as previsões a 10 pontos para manter o gráfico legível
-    if len(predictions) > 10:
-        predictions.pop(0)
-
-    # Atualizar o gráfico com os novos valores
-    fig, ax = plt.subplots()
-    ax.plot(predictions, marker='o', color='blue')
-    ax.set_title("Previsões de Falhas ao Longo do Tempo")
-    ax.set_xlabel("Instância")
-    ax.set_ylabel("Probabilidade de Falha")
-
-    # Atualizar o gráfico no Streamlit
-    chart_placeholder.pyplot(fig)
-    fazer_previsao(row, index)
-    time.sleep(3)
