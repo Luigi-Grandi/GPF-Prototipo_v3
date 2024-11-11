@@ -198,7 +198,7 @@ with st.expander("Analise Continua de Máquina: "):
         # Fazer a previsão
         prediction = model.predict(X_input)
         resultado = "Falha" if prediction >= 0.05 else "Sem Falha"
-        
+
         # Exibir o resultado
         result_div.markdown(
             f"""
@@ -212,6 +212,17 @@ with st.expander("Analise Continua de Máquina: "):
             """,
             unsafe_allow_html=True
         )
+
+        # Exibir valores de entrada em duas colunas
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown(f"**Type Encoded:** {type_encoded}")
+            st.markdown(f"**Air Temperature [K]:** {air_temp}")
+            st.markdown(f"**Process Temperature [K]:** {process_temp}")
+        with col2:
+            st.markdown(f"**Rotational Speed [rpm]:** {rot_speed}")
+            st.markdown(f"**Torque [Nm]:** {torque}")
+            st.markdown(f"**Tool Wear [min]:** {tool_wear}")
 
     # Placeholder para exibir o resultado em tempo real
     result_div = st.empty()
