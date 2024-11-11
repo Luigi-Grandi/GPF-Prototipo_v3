@@ -243,6 +243,7 @@ rot_speed_values, torque_values, tool_wear_values = [], [], []
 
 # Loop para realizar previsões contínuas e atualizar gráficos
 for index, row in data.iterrows():
+    fazer_previsao(row, index)
     prediction_value = fazer_previsao_graph(row)
     predictions.append(prediction_value)
 
