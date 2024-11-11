@@ -202,7 +202,7 @@ def fazer_previsao(row, linha_atual):
         <div style="padding:10px; border-radius: 25px; background-color: {'#cb0000' if resultado == 'Falha' else '#26b500'};">
             <h3 style="text-align: center; color: white;">Resultado da Previsão</h3>
             <p style="text-align: center; font-size: 20px; font-weight: bold;">{resultado}</p>
-            <p style="text-align: align-left; font-size: 5px; font-weight: bold;">Instancia: {linha_atual + 1}</p>
+            <p style="text-align: align-right; font-size: 15px; font-weight: bold;">Instancia: {linha_atual + 1}</p>
         </div>
         """,
         unsafe_allow_html=True
