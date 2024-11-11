@@ -177,7 +177,7 @@ data = pd.read_csv('data/galds.csv')
 type_mapping = {"L": 0, "M": 1, "H": 2}
 
 # Função para fazer previsão em uma linha de dados
-def fazer_previsao(row):
+def fazer_previsao(row, linha_atual):
     # Preparar os dados da linha
     type_encoded = type_mapping[row['Type']]
     air_temp = row['Air temperature [K]']
@@ -194,20 +194,23 @@ def fazer_previsao(row):
 
     # Fazer a previsão
     prediction = model.predict(X_input)
-    resultado = "Falha" if prediction >= 0.1 else "Sem Falha"
+    resultado = "Falha" if prediction >= 0.05 else "Sem Falha"
     
     # Exibir o resultado
-    st.markdown(
+    result_div.markdown(
         f"""
-        <div style="padding:10px; border-radius: 25px; background-color: {'#cb0000' if resultado == 'Falha' else '#26b500'};">
-            <h3 style="text-align: center; color: white;">Resultado da Previsão</h3>
-            <p style="text-align: center; font-size: 20px; font-weight: bold;">{resultado}{prediction}</p>
+        <div style="padding:10px; border-radius:5px; background-color: {'#cb0000' if resultado == 'Falha' else '#26b500'};">
+            <h3 style="text-align: center; color: white;">Resultado da Previsão - Linha {linha_atual + 1}</h3>
+            <p style="text-align: center; font-size: 20px; font-weight: bold;">{resultado}</p>
         </div>
         """,
         unsafe_allow_html=True
     )
 
+# Placeholder para exibir o resultado em tempo real
+result_div = st.empty()
+
 # Loop para prever falhas a cada 3 segundos
 for index, row in data.iterrows():
-    fazer_previsao(row)
+    fazer_previsao(row, index)
     time.sleep(3)  # Espera de 3 segundos entre as previsões
