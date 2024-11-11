@@ -176,65 +176,65 @@ data = pd.read_csv('data/galds.csv')
 # Mapeamento dos tipos
 type_mapping = {"L": 0, "M": 1, "H": 2}
 
-with st.expander("Analise Continua de Máquina: "):
-        # Configuração do gráfico interativo
-    st.subheader("📉 Monitoramento Contínuo de Previsão de Falhas")
-    prediction_fig, prediction_ax = plt.subplots()
-    predictions = []  # Lista para armazenar os resultados de cada previsão
-    indices = []  # Lista para armazenar os índices (ou instâncias) das previsões
 
-    # Função para fazer a previsão e atualizar o gráfico
-    def fazer_previsao(row, linha_atual):
-        # Preparar os dados da linha
-        type_encoded = type_mapping[row['Type']]
-        air_temp = row['Air temperature [K]']
-        process_temp = row['Process temperature [K]']
-        rot_speed = row['Rotational speed [rpm]']
-        torque = row['Torque [Nm]']
-        tool_wear = row['Tool wear [min]']
-        input_data = np.array([[type_encoded, air_temp, process_temp, rot_speed, torque, tool_wear]])
+# Configuração do gráfico interativo
+st.subheader("📉 Monitoramento Contínuo de Previsão de Falhas")
+prediction_fig, prediction_ax = plt.subplots()
+predictions = []  # Lista para armazenar os resultados de cada previsão
+indices = []  # Lista para armazenar os índices (ou instâncias) das previsões
 
-        # Padronizar e preparar a entrada para o LSTM
-        input_data_scaled = scaler.transform(input_data)
-        X_input = np.tile(input_data_scaled, (10, 1))
-        X_input = X_input.reshape((1, 10, input_data_scaled.shape[1]))
+# Função para fazer a previsão e atualizar o gráfico
+def fazer_previsao(row, linha_atual):
+    # Preparar os dados da linha
+    type_encoded = type_mapping[row['Type']]
+    air_temp = row['Air temperature [K]']
+    process_temp = row['Process temperature [K]']
+    rot_speed = row['Rotational speed [rpm]']
+    torque = row['Torque [Nm]']
+    tool_wear = row['Tool wear [min]']
+    input_data = np.array([[type_encoded, air_temp, process_temp, rot_speed, torque, tool_wear]])
 
-        # Fazer a previsão
-        prediction = model.predict(X_input)[0][0]  # Captura o valor da previsão
-        resultado = "Falha" if prediction >= 0.05 else "Sem Falha"
-        
-        # Exibir o resultado
-        result_div.markdown(
-            f"""
-            <div style="margin: 20px; padding:10px; border-radius: 25px; background-color: {'#cb0000' if resultado == 'Falha' else '#26b500'}; position: relative;">
-                <h3 style="text-align: center; color: white;">Resultado da Previsão</h3>
-                <p style="text-align: center; font-size: 20px; font-weight: bold;">{resultado}</p>
-                <p style="font-size: 10px; font-weight: bold; position: absolute; bottom: 10px; right: 20px; margin: 0;">
-                    Instancia: {linha_atual + 1}
-                </p> 
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+    # Padronizar e preparar a entrada para o LSTM
+    input_data_scaled = scaler.transform(input_data)
+    X_input = np.tile(input_data_scaled, (10, 1))
+    X_input = X_input.reshape((1, 10, input_data_scaled.shape[1]))
 
-        # Adiciona a previsão e o índice ao gráfico
-        predictions.append(prediction)
-        indices.append(linha_atual + 1)
-        
-        # Limpa e redesenha o gráfico
-        prediction_ax.clear()
-        prediction_ax.plot(indices, predictions, marker='o', linestyle='-', color='b')
-        prediction_ax.set_title("Evolução das Previsões de Falha")
-        prediction_ax.set_xlabel("Instância")
-        prediction_ax.set_ylabel("Valor da Previsão")
-        prediction_ax.grid()
-        st.pyplot(prediction_fig)
+    # Fazer a previsão
+    prediction = model.predict(X_input)[0][0]  # Captura o valor da previsão
+    resultado = "Falha" if prediction >= 0.05 else "Sem Falha"
+    
+    # Exibir o resultado
+    result_div.markdown(
+        f"""
+        <div style="margin: 20px; padding:10px; border-radius: 25px; background-color: {'#cb0000' if resultado == 'Falha' else '#26b500'}; position: relative;">
+            <h3 style="text-align: center; color: white;">Resultado da Previsão</h3>
+            <p style="text-align: center; font-size: 20px; font-weight: bold;">{resultado}</p>
+            <p style="font-size: 10px; font-weight: bold; position: absolute; bottom: 10px; right: 20px; margin: 0;">
+                Instancia: {linha_atual + 1}
+            </p> 
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
-    # Placeholder para exibir o resultado em tempo real
-    result_div = st.empty()
+    # Adiciona a previsão e o índice ao gráfico
+    predictions.append(prediction)
+    indices.append(linha_atual + 1)
+    
+    # Limpa e redesenha o gráfico
+    prediction_ax.clear()
+    prediction_ax.plot(indices, predictions, marker='o', linestyle='-', color='b')
+    prediction_ax.set_title("Evolução das Previsões de Falha")
+    prediction_ax.set_xlabel("Instância")
+    prediction_ax.set_ylabel("Valor da Previsão")
+    prediction_ax.grid()
+    st.pyplot(prediction_fig)
 
-    # Loop para prever falhas e atualizar o gráfico a cada 3 segundos
-    with st.expander("Analise Continua de Máquina"):
-        for index, row in data.iterrows():
-            fazer_previsao(row, index)
-            time.sleep(3)  # Espera de 3 segundos entre as previsões
+# Placeholder para exibir o resultado em tempo real
+result_div = st.empty()
+
+# Loop para prever falhas e atualizar o gráfico a cada 3 segundos
+with st.expander("Analise Continua de Máquina"):
+    for index, row in data.iterrows():
+        fazer_previsao(row, index)
+        time.sleep(3)  # Espera de 3 segundos entre as previsões
