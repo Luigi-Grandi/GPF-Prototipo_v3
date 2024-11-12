@@ -8,5 +8,4 @@ scikit-learn
 keras
 catboost
 joblib
-iterstrat
 xgboost
