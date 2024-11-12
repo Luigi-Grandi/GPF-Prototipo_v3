@@ -266,7 +266,6 @@ if not data.empty:
             st.pyplot(fig3)
         except Exception as e:
             st.error(f"Erro ao calcular a importância das features: {e}")
-
 # Função para fazer previsão em uma linha de dados
 def fazer_previsao(row, linha_atual):
     # Preparar os dados da linha
@@ -317,10 +316,12 @@ def fazer_previsao(row, linha_atual):
     except Exception as e:
         st.error(f"Erro ao fazer a previsão: {e}")
 
-# Placeholder para exibir o resultado em tempo real
-result_div = st.empty()
 
-# Loop para prever falhas a cada 3 segundos
-for index, row in data.iterrows():
-    fazer_previsao(row, index)
-    time.sleep(3)  # Espera de 3 segundos entre as previsões
+with st.expander("Veja mais análises de correlação"):
+    # Placeholder para exibir o resultado em tempo real
+    result_div = st.empty()
+
+    # Loop para prever falhas a cada 3 segundos
+    for index, row in data.iterrows():
+        fazer_previsao(row, index)
+        time.sleep(3)  # Espera de 3 segundos entre as previsões
