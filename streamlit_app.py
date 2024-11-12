@@ -297,9 +297,10 @@ def fazer_previsao(row, linha_atual):
             falhas = ', '.join(predicted_failures)
             st.markdown(
                 f"""
-                <div style="margin: 10px; padding:10px; border-radius:25px; background-color: #cb0000;">
+                <div style="margin: 10px; padding:10px; border-radius:25px; background-color: #cb0000; position: relative;">
                     <h3 style="text-align: center; color: white;">Falhas Previstas</h3>
                     <p style="text-align: center; font-size: 20px; font-weight: bold;">{falhas}</p>
+                    <p style="font-size: 15px; font-weight: bold; position: absolute; bottom: 10px; right: 10px; margin: 0;"> Instancia: {linha_atual + 1}</p> 
                 </div>
                 """,
                 unsafe_allow_html=True
@@ -307,8 +308,9 @@ def fazer_previsao(row, linha_atual):
         else:
             st.markdown(
                 f"""
-                <div style="margin: 10px; padding:10px; border-radius:25px; background-color: #26b500;">
+                <div style="margin: 10px; padding:10px; border-radius:25px; background-color: #26b500; position: relative;">
                     <h3 style="text-align: center; color: white;">Sem Falhas Previstas</h3>
+                    <p style="font-size: 15px; font-weight: bold; position: absolute; bottom: 10px; right: 10px; margin: 0;"> Instancia: {linha_atual + 1}</p> 
                 </div>
                 """,
                 unsafe_allow_html=True
