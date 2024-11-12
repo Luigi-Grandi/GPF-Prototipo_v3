@@ -6,6 +6,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import base64
 import time
+from datetime import datetime
 from sklearn.base import clone
 from sklearn.multioutput import ClassifierChain
 from xgboost import XGBClassifier
@@ -141,8 +142,10 @@ def load_pipeline():
         return pipeline
     except FileNotFoundError:
         st.error("Arquivo 'model_pipeline.joblib' não encontrado. Verifique o caminho e tente novamente.")
+        return None
     except Exception as e:
         st.error(f"Erro ao carregar o pipeline: {e}")
+        return None
 
 pipeline = load_pipeline()
 
@@ -162,6 +165,8 @@ if 'current_index' not in st.session_state:
     st.session_state.current_index = 0
 if 'predictions' not in st.session_state:
     st.session_state.predictions = []
+if 'processing' not in st.session_state:
+    st.session_state.processing = False
 
 # Título e introdução do aplicativo
 st.title("🔧 Dashboard da Previsão de Falhas de Máquina")
@@ -269,117 +274,103 @@ st.header("📈 Processamento Automático de CSV")
 auto_pred_container = st.empty()
 progress_bar = st.progress(0)
 
-# Botão para iniciar o processamento automático
+# Botão para iniciar ou parar o processamento automático
 if st.button("🚀 Iniciar Processamento Automático"):
-    if st.session_state.current_index >= len(data):
-        st.success("Todos os dados foram processados.")
+    if st.session_state.processing:
+        st.session_state.processing = False
+        st.success("Processamento automático parado pelo usuário.")
     else:
-        total = len(data)
-        for idx in range(st.session_state.current_index, len(data)):
-            row = data.iloc[idx]
-            # Fazer a predição
-            prediction = fazer_previsao(row, idx)
-
-            # Atualizar as predições no session_state
-            st.session_state.predictions.append(prediction)
-
-            # Atualizar o placeholder com a predição
-            if isinstance(prediction, list):
-                if prediction:
-                    falhas = ', '.join(prediction)
-                    auto_pred_container.markdown(
-                        f"""
-                        <div style="margin: 10px; padding:10px; border-radius:25px; background-color: #cb0000; position: relative;">
-                            <h4 style="text-align: center; color: white;">Falhas Previstas</h4>
-                            <p style="text-align: center; font-size: 16px; font-weight: bold;">{falhas}</p>
-                            <p style="font-size: 15px; font-weight: bold; position: absolute; bottom: 10px; right: 10px; margin: 0;"> Instância: {idx + 1}</p> 
-                        </div>
-                        """,
-                        unsafe_allow_html=True
-                    )
+        if st.session_state.current_index >= len(data):
+            st.warning("Todos os dados já foram processados.")
+        else:
+            st.session_state.processing = True
+            # Iniciar o processamento
+            while st.session_state.processing and st.session_state.current_index < len(data):
+                row = data.iloc[st.session_state.current_index]
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                # Fazer a predição
+                prediction = fazer_previsao(row, st.session_state.current_index)
+                # Atualizar as predições no session_state
+                st.session_state.predictions.append({
+                    'Linha': st.session_state.current_index + 1,
+                    'Tempo': timestamp,
+                    'Type': row['Type'],
+                    'Air temperature [K]': row['Air temperature [K]'],
+                    'Process temperature [K]': row['Process temperature [K]'],
+                    'Rotational speed [rpm]': row['Rotational speed [rpm]'],
+                    'Torque [Nm]': row['Torque [Nm]'],
+                    'Tool wear [min]': row['Tool wear [min]'],
+                    'Falhas_Previstas': ', '.join(prediction) if isinstance(prediction, list) and prediction else 'Sem Falhas'
+                })
+                # Atualizar o placeholder com a predição
+                if isinstance(prediction, list):
+                    if prediction:
+                        falhas = ', '.join(prediction)
+                        auto_pred_container.markdown(
+                            f"""
+                            <div style="margin: 10px; padding:10px; border-radius:25px; background-color: #cb0000; position: relative;">
+                                <h4 style="text-align: center; color: white;">Falhas Previstas</h4>
+                                <p style="text-align: center; font-size: 16px; font-weight: bold;">{falhas}</p>
+                                <p style="font-size: 15px; font-weight: bold; position: absolute; bottom: 10px; right: 10px; margin: 0;">Instância: {st.session_state.current_index + 1}</p> 
+                            </div>
+                            """,
+                            unsafe_allow_html=True
+                        )
+                    else:
+                        auto_pred_container.markdown(
+                            f"""
+                            <div style="margin: 10px; padding:10px; border-radius:25px; background-color: #26b500; position: relative;">
+                                <h4 style="text-align: center; color: white;">Sem Falhas Previstas</h4>
+                                <p style="font-size: 15px; font-weight: bold; position: absolute; bottom: 10px; right: 10px; margin: 0;">Instância: {st.session_state.current_index + 1}</p> 
+                            </div>
+                            """,
+                            unsafe_allow_html=True
+                        )
                 else:
                     auto_pred_container.markdown(
                         f"""
-                        <div style="margin: 10px; padding:10px; border-radius:25px; background-color: #26b500; position: relative;">
-                            <h4 style="text-align: center; color: white;">Sem Falhas Previstas</h4>
-                            <p style="font-size: 15px; font-weight: bold; position: absolute; bottom: 10px; right: 10px; margin: 0;"> Instância: {idx + 1}</p> 
+                        <div style="margin: 10px; padding:10px; border-radius:25px; background-color: #ff9900; position: relative;">
+                            <h4 style="text-align: center; color: white;">{prediction}</h4>
+                            <p style="font-size: 15px; font-weight: bold; position: absolute; bottom: 10px; right: 10px; margin: 0;">Instância: {st.session_state.current_index + 1}</p> 
                         </div>
                         """,
                         unsafe_allow_html=True
                     )
-            else:
-                auto_pred_container.markdown(
-                    f"""
-                    <div style="margin: 10px; padding:10px; border-radius:25px; background-color: #ff9900; position: relative;">
-                        <h4 style="text-align: center; color: white;">{prediction}</h4>
-                        <p style="font-size: 15px; font-weight: bold; position: absolute; bottom: 10px; right: 10px; margin: 0;"> Instância: {idx + 1}</p> 
-                    </div>
-                    """,
-                    unsafe_allow_html=True
-                )
+                # Atualizar a barra de progresso
+                progress = (st.session_state.current_index + 1) / len(data)
+                progress_bar.progress(progress)
+                # Incrementar o índice
+                st.session_state.current_index += 1
+                # Esperar 3 segundos
+                time.sleep(3)
+            if st.session_state.current_index >= len(data):
+                st.session_state.processing = False
+                st.success("Processamento automático concluído.")
 
-            # Atualizar a barra de progresso
-            progress = (idx + 1) / total
-            progress_bar.progress(progress)
-
-            # Incrementar o índice
-            st.session_state.current_index += 1
-
-            # Esperar 3 segundos
-            time.sleep(3)
-
-        st.success("Processamento automático concluído.")
+# Botão para parar o processamento automático
+if st.session_state.processing:
+    if st.button("⏹ Parar Processamento Automático"):
+        st.session_state.processing = False
+        st.success("Processamento automático parado pelo usuário.")
 
 # Exibir as predições realizadas
 if st.session_state.predictions:
     st.header("📄 Predições Realizadas")
-    predictions_display = []
-    for i, pred in enumerate(st.session_state.predictions, start=1):
-        if isinstance(pred, list):
-            if pred:
-                falhas = ', '.join(pred)
-            else:
-                falhas = 'Sem Falhas'
-            predictions_display.append({'Linha': i, 'Falhas_Previstas': falhas})
-        else:
-            predictions_display.append({'Linha': i, 'Falhas_Previstas': pred})
-
-    predictions_df = pd.DataFrame(predictions_display)
+    predictions_df = pd.DataFrame(st.session_state.predictions)
     st.dataframe(predictions_df)
 
-# Expansor para visualização da matriz de correlação
-if not data.empty:
-    with st.expander("📊 Veja mais análises de correlação"):
-        # Análise Exploratória dos Dados
-        st.header("📈 Análise Geral dos Dados")
+    # Adicionar gráficos de evolução das features
+    st.subheader("📈 Evolução das Features ao Longo do Tempo")
 
-        # Dividir gráficos em colunas para melhor organização
-        col1, col2 = st.columns(2)
+    # Selecionar as colunas de features
+    feature_columns = ['Type', 'Air temperature [K]', 'Process temperature [K]', 
+                       'Rotational speed [rpm]', 'Torque [Nm]', 'Tool wear [min]']
 
-        # Gráfico 1: Distribuição de temperatura do ar em função do tipo de máquina
-        with col1:
-            st.subheader("📉 Distribuição de Temperatura do Ar por Tipo de Máquina")
-            fig1, ax1 = plt.subplots()
-            sns.boxplot(data=data, x='Type', y='Air temperature [K]', ax=ax1)
-            st.pyplot(fig1)
+    # Criar um DataFrame apenas com as features e o tempo
+    features_evolution = predictions_df[['Tempo'] + feature_columns].copy()
+    features_evolution['Tempo'] = pd.to_datetime(features_evolution['Tempo'])
 
-        # Gráfico 2: Rotational speed vs Torque colorido por Machine failure
-        with col2:
-            st.subheader("📉 Velocidade Rotacional vs Torque (Colorido por Falha)")
-            fig2, ax2 = plt.subplots()
-            sns.scatterplot(data=data, x='Rotational speed [rpm]', y='Torque [Nm]', hue='Machine failure', palette='coolwarm', ax=ax2)
-            st.pyplot(fig2)
+    # Ordenar por tempo
+    features_evolution = features_evolution.sort_values('Tempo')
 
-# Análises adicionais (opcional)
-if not data.empty:
-    with st.expander("🔍 Análises Adicionais"):
-        st.header("🔍 Análises Complementares")
-
-        # Exemplo: Distribuição das classes de falha
-        st.subheader("📊 Distribuição das Classes de Falha")
-        failure_columns = ['TWF', 'HDF', 'PWF', 'OSF', 'RNF']
-        if all(col in data.columns for col in failure_columns):
-            failure_counts = data[failure_columns].sum()
-            st.bar_chart(failure_counts)
-        else:
-            st.warning(f"O arquivo CSV deve conter as colunas: {', '.join(failure_columns)}")
+    # Configurar o layout dos gráficos
