@@ -5,6 +5,7 @@ import joblib
 import seaborn as sns
 import matplotlib.pyplot as plt
 import base64
+import time
 from sklearn.base import clone
 from sklearn.multioutput import ClassifierChain
 from xgboost import XGBClassifier
@@ -275,7 +276,14 @@ def fazer_previsao(row, linha_atual):
     rot_speed = row['Rotational speed [rpm]']
     torque = row['Torque [Nm]']
     tool_wear = row['Tool wear [min]']
-    input_data = np.array([[type_encoded, air_temp, process_temp, rot_speed, torque, tool_wear]])
+
+        # Criação das novas features conforme engenharia de features do modelo
+    temp_diff = process_temp - air_temp
+    power = torque * rot_speed
+    wear_torque = tool_wear * torque
+
+    # Agrupando as entradas como array
+    input_data = np.array([[type_encoded, air_temp, process_temp, rot_speed, torque, tool_wear, temp_diff, power, wear_torque]])
 
     try:
         # Fazendo a previsão multilabel
