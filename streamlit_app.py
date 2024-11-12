@@ -173,7 +173,7 @@ st.title("🔧 Dashboard da Previsão de Falhas de Máquina")
 st.write("Bem-vindo ao sistema de previsão de falhas! Este aplicativo processa automaticamente as linhas do arquivo CSV a cada 3 segundos, fazendo predições de falhas de máquina.")
 
 # Menu lateral para as entradas do usuário (Predições Individuais)
-st.sidebar.title("Configurações e Entrada de Dados (Individual)")
+st.sidebar.title("Entrada de Dados para Simular Condição da Máquina (Individual)")
 type_value = st.sidebar.selectbox("Tipo da Máquina (Type)", ["L", "M", "H"])
 air_temp = st.sidebar.number_input("Temperatura do Ar [K]", min_value=0.0, format="%.2f")
 process_temp = st.sidebar.number_input("Temperatura do Processo [K]", min_value=0.0, format="%.2f")
@@ -268,7 +268,7 @@ if st.sidebar.button("🔍 Prever Falhas (Individual)"):
         individual_pred_container.error(prediction)
 
 # Seção para processamento automático do CSV
-st.header("📈 Processamento Automático de CSV")
+st.header("📈 Monitoramento Ativo de Máquina")
 
 # Placeholder para exibir o resultado em tempo real
 auto_pred_container = st.empty()
@@ -360,7 +360,7 @@ if st.session_state.predictions:
     st.dataframe(predictions_df)
 
     # Adicionar gráficos de evolução das features
-    st.subheader("📈 Evolução das Features ao Longo do Tempo")
+    st.subheader("📈 Evolução das Váriaveis do Máquina ao Longo do Tempo")
 
     # Selecionar as colunas de features
     feature_columns = ['Type', 'Air temperature [K]', 'Process temperature [K]', 
@@ -388,7 +388,7 @@ if st.session_state.predictions:
             st.pyplot(fig)
 
     # Botão para gerar relatório
-    if st.button("📄 Gerar Relatório de Predições"):
+    if st.button("📄 Gerar Relatório das Condições da Máquina"):
         # Gerar o relatório em CSV
         report_csv = predictions_df.to_csv(index=False).encode('utf-8')
         st.download_button(
@@ -401,7 +401,7 @@ if st.session_state.predictions:
 
 # Expansor para visualização da matriz de correlação
 if not data.empty:
-    with st.expander("📊 Veja mais análises de correlação"):
+    with st.expander("📊 Mais análises de correlação"):
         # Análise Exploratória dos Dados
         st.header("📈 Análise Geral dos Dados")
 
