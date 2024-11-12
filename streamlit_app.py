@@ -326,4 +326,4 @@ with st.expander("Veja mais análises de correlação"):
     # Loop para prever falhas a cada 3 segundos
     for index, row in data.iterrows():
         fazer_previsao(row, index)
-        time.sleep(3)  # Espera de 3 segundos entre as previsões
+        #time.sleep(3)  # Espera de 3 segundos entre as previsões
