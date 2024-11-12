@@ -309,7 +309,7 @@ def fazer_previsao(row, linha_atual):
             st.markdown(
                 f"""
                 <div style="margin: 10px; padding:10px; border-radius:25px; background-color: #26b500; position: relative;">
-                    <h3 style="text-align: center; color: white;">Sem Falhas Previstas</h3>
+                    <h3 style="text-align: center; color: white;">Sem Falhas Previstas {y_pred}</h3>
                     <p style="font-size: 15px; font-weight: bold; position: absolute; bottom: 10px; right: 10px; margin: 0;"> Instancia: {linha_atual + 1}</p> 
                 </div>
                 """,
