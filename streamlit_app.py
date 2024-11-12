@@ -374,3 +374,82 @@ if st.session_state.predictions:
     features_evolution = features_evolution.sort_values('Tempo')
 
     # Configurar o layout dos gráficos
+    num_features = len(feature_columns)
+    cols = st.columns(min(3, num_features))
+
+    for i, feature in enumerate(feature_columns):
+        with cols[i % 3]:
+            fig, ax = plt.subplots()
+            sns.lineplot(data=features_evolution, x='Tempo', y=feature, marker='o', ax=ax)
+            ax.set_title(f'Evolução de {feature}')
+            ax.set_xlabel('Tempo')
+            ax.set_ylabel(feature)
+            plt.xticks(rotation=45)
+            st.pyplot(fig)
+
+    # Botão para gerar relatório
+    if st.button("📄 Gerar Relatório de Predições"):
+        # Gerar o relatório em CSV
+        report_csv = predictions_df.to_csv(index=False).encode('utf-8')
+        st.download_button(
+            label="📥 Baixar Relatório em CSV",
+            data=report_csv,
+            file_name='relatorio_predicoes.csv',
+            mime='text/csv',
+        )
+        st.success("Relatório gerado com sucesso!")
+
+# Expansor para visualização da matriz de correlação
+if not data.empty:
+    with st.expander("📊 Veja mais análises de correlação"):
+        # Análise Exploratória dos Dados
+        st.header("📈 Análise Geral dos Dados")
+
+        # Dividir gráficos em colunas para melhor organização
+        col1, col2 = st.columns(2)
+
+        # Gráfico 1: Distribuição de temperatura do ar em função do tipo de máquina
+        with col1:
+            st.subheader("📉 Distribuição de Temperatura do Ar por Tipo de Máquina")
+            fig1, ax1 = plt.subplots()
+            sns.boxplot(data=data, x='Type', y='Air temperature [K]', ax=ax1)
+            st.pyplot(fig1)
+
+        # Gráfico 2: Rotational speed vs Torque colorido por Machine failure
+        with col2:
+            st.subheader("📉 Velocidade Rotacional vs Torque (Colorido por Falha)")
+            fig2, ax2 = plt.subplots()
+            sns.scatterplot(data=data, x='Rotational speed [rpm]', y='Torque [Nm]', hue='Machine failure', palette='coolwarm', ax=ax2)
+            st.pyplot(fig2)
+
+# Análises adicionais (opcional)
+if not data.empty:
+    with st.expander("🔍 Análises Adicionais"):
+        st.header("🔍 Análises Complementares")
+
+        # Exemplo: Distribuição das classes de falha
+        st.subheader("📊 Distribuição das Classes de Falha")
+        failure_columns = ['TWF', 'HDF', 'PWF', 'OSF', 'RNF']
+        if all(col in data.columns for col in failure_columns):
+            failure_counts = data[failure_columns].sum()
+            st.bar_chart(failure_counts)
+        else:
+            st.warning(f"O arquivo CSV deve conter as colunas: {', '.join(failure_columns)}")
+
+        # Exemplo: Importância das Features
+        st.subheader("📈 Importância das Features")
+        try:
+            # Obter a média das importâncias das features de todos os classificadores
+            feature_importances = np.mean([
+                estimator.feature_importances_ for estimator in pipeline.named_steps['classifier'].estimators_
+            ], axis=0)
+            feature_names = ['Type', 'Air temperature [K]', 'Process temperature [K]', 'Rotational speed [rpm]',
+                             'Torque [Nm]', 'Tool wear [min]', 'Temp_Diff', 'Power', 'Wear_Torque']
+            feature_importances_series = pd.Series(feature_importances, index=feature_names).sort_values(ascending=False)
+            fig3, ax3 = plt.subplots(figsize=(10,6))
+            sns.barplot(x=feature_importances_series, y=feature_importances_series.index, ax=ax3)
+            ax3.set_xlabel("Importância das Features")
+            ax3.set_ylabel("Features")
+            st.pyplot(fig3)
+        except Exception as e:
+            st.error(f"Erro ao calcular a importância das features: {e}")
