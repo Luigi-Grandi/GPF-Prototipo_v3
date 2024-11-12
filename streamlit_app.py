@@ -12,7 +12,7 @@ from xgboost import XGBClassifier
 
 # Definição da classe personalizada WeightedClassifierChain
 class WeightedClassifierChain(ClassifierChain):
-    def init(self, base_estimator, order='random', random_state=None, weights=None):
+    def _init_(self, base_estimator, order='random', random_state=None, weights=None):
         """
         Classe personalizada que herda de ClassifierChain e permite definir scale_pos_weight individualmente para cada classe.
 
@@ -22,7 +22,7 @@ class WeightedClassifierChain(ClassifierChain):
         - random_state: Controle da aleatoriedade para reproducibilidade.
         - weights: Lista de scale_pos_weight para cada classe.
         """
-        super().init(base_estimator=base_estimator, order=order, random_state=random_state)
+        super()._init_(base_estimator=base_estimator, order=order, random_state=random_state)
         self.weights = weights  # Lista de scale_pos_weight para cada classe
 
     def fit(self, X, Y, **fit_params):
@@ -48,7 +48,8 @@ class WeightedClassifierChain(ClassifierChain):
         return super().fit(X, Y, **fit_params)
 
 # Definição das classes de falha
-failure_classes = ['Desgaste de Ferramenta', 'Falha de Dissipação de Calor', 'Falha de Potência', 'Falha de Esforço Excessivo', 'Falha Geral']
+failure_classes = ['Desgaste de Ferramenta', 'Falha de Dissipação de Calor', 
+                   'Falha de Potência', 'Falha de Esforço Excessivo', 'Falha Geral']
 
 # Carregar a imagem do logotipo
 logo_path = "data/logo.jpg"  # Caminho para a imagem do logotipo
@@ -156,12 +157,18 @@ except FileNotFoundError:
     st.error("Arquivo 'galds.csv' não encontrado em 'data/galds.csv'. Verifique o caminho do arquivo.")
     data = pd.DataFrame()
 
+# Inicializar session_state para controle do processamento
+if 'current_index' not in st.session_state:
+    st.session_state.current_index = 0
+if 'predictions' not in st.session_state:
+    st.session_state.predictions = []
+
 # Título e introdução do aplicativo
 st.title("🔧 Dashboard da Previsão de Falhas de Máquina")
-st.write("Bem-vindo ao sistema de previsão de falhas! Insira os dados da máquina e explore as análises gráficas.")
+st.write("Bem-vindo ao sistema de previsão de falhas! Este aplicativo processa automaticamente as linhas do arquivo CSV a cada 3 segundos, fazendo predições de falhas de máquina.")
 
-# Menu lateral para as entradas do usuário
-st.sidebar.title("Configurações e Entrada de Dados")
+# Menu lateral para as entradas do usuário (Predições Individuais)
+st.sidebar.title("Configurações e Entrada de Dados (Individual)")
 type_value = st.sidebar.selectbox("Tipo da Máquina (Type)", ["L", "M", "H"])
 air_temp = st.sidebar.number_input("Temperatura do Ar [K]", min_value=0.0, format="%.2f")
 process_temp = st.sidebar.number_input("Temperatura do Processo [K]", min_value=0.0, format="%.2f")
@@ -181,20 +188,60 @@ wear_torque = tool_wear * torque
 # Agrupando as entradas como array
 input_data = np.array([[type_encoded, air_temp, process_temp, rot_speed, torque, tool_wear, temp_diff, power, wear_torque]])
 
-# Botão de previsão
-if st.button("🔍 Prever Falhas"):
+# Placeholder para exibição das predições individuais
+individual_pred_container = st.sidebar.empty()
+
+# Função para fazer previsão em uma linha de dados
+def fazer_previsao(row, linha_atual):
+    # Preparar os dados da linha
     try:
-        # Fazendo a previsão multilabel
-        y_pred = pipeline.predict(input_data)
-        # y_pred é um array binário indicando a presença de cada falha
+        type_val = row['Type']
+        air_temp_val = row['Air temperature [K]']
+        process_temp_val = row['Process temperature [K]']
+        rot_speed_val = row['Rotational speed [rpm]']
+        torque_val = row['Torque [Nm]']
+        tool_wear_val = row['Tool wear [min]']
 
-        # Usar a lista manual de classes
-        predicted_failures = [cls for cls, pred in zip(failure_classes, y_pred[0]) if pred == 1]
+        # Mapear o tipo
+        type_encoded_val = type_mapping.get(type_val, 0)  # default to 0 se não encontrado
 
-        # Exibindo o resultado
-        if predicted_failures:
-            falhas = ', '.join(predicted_failures)
-            st.markdown(
+        # Criar as novas features
+        temp_diff_val = process_temp_val - air_temp_val
+        power_val = torque_val * rot_speed_val
+        wear_torque_val = tool_wear_val * torque_val
+
+        # Agrupar as features
+        input_row = np.array([[type_encoded_val, air_temp_val, process_temp_val, rot_speed_val,
+                               torque_val, tool_wear_val, temp_diff_val, power_val, wear_torque_val]])
+
+        # Fazer a previsão
+        y_pred_row = pipeline.predict(input_row)
+
+        # Mapear as predições
+        predicted_failures_row = [cls for cls, pred in zip(failure_classes, y_pred_row[0]) if pred == 1]
+
+        # Retornar as predições
+        return predicted_failures_row
+
+    except Exception as e:
+        return f"Erro ao processar a linha: {e}"
+
+# Botão de previsão para input individual
+if st.sidebar.button("🔍 Prever Falhas (Individual)"):
+    prediction = fazer_previsao({
+        'Type': type_value,
+        'Air temperature [K]': air_temp,
+        'Process temperature [K]': process_temp,
+        'Rotational speed [rpm]': rot_speed,
+        'Torque [Nm]': torque,
+        'Tool wear [min]': tool_wear
+    }, 0)  # Linha 0 para individual
+
+    # Exibindo o resultado
+    if isinstance(prediction, list):
+        if prediction:
+            falhas = ', '.join(prediction)
+            individual_pred_container.markdown(
                 f"""
                 <div style="padding:10px; border-radius:5px; background-color: #cb0000;">
                     <h3 style="text-align: center; color: white;">Falhas Previstas</h3>
@@ -204,7 +251,7 @@ if st.button("🔍 Prever Falhas"):
                 unsafe_allow_html=True
             )
         else:
-            st.markdown(
+            individual_pred_container.markdown(
                 f"""
                 <div style="padding:10px; border-radius:5px; background-color: #26b500;">
                     <h3 style="text-align: center; color: white;">Sem Falhas Previstas</h3>
@@ -212,21 +259,106 @@ if st.button("🔍 Prever Falhas"):
                 """,
                 unsafe_allow_html=True
             )
-    except Exception as e:
-        st.error(f"Erro ao fazer a previsão: {e}")
+    else:
+        individual_pred_container.error(prediction)
+
+# Seção para processamento automático do CSV
+st.header("📈 Processamento Automático de CSV")
+
+# Placeholder para exibir o resultado em tempo real
+auto_pred_container = st.empty()
+progress_bar = st.progress(0)
+
+# Botão para iniciar o processamento automático
+if st.button("🚀 Iniciar Processamento Automático"):
+    if st.session_state.current_index >= len(data):
+        st.success("Todos os dados foram processados.")
+    else:
+        total = len(data)
+        for idx in range(st.session_state.current_index, len(data)):
+            row = data.iloc[idx]
+            # Fazer a predição
+            prediction = fazer_previsao(row, idx)
+
+            # Atualizar as predições no session_state
+            st.session_state.predictions.append(prediction)
+
+            # Atualizar o placeholder com a predição
+            if isinstance(prediction, list):
+                if prediction:
+                    falhas = ', '.join(prediction)
+                    auto_pred_container.markdown(
+                        f"""
+                        <div style="margin: 10px; padding:10px; border-radius:25px; background-color: #cb0000; position: relative;">
+                            <h4 style="text-align: center; color: white;">Falhas Previstas</h4>
+                            <p style="text-align: center; font-size: 16px; font-weight: bold;">{falhas}</p>
+                            <p style="font-size: 15px; font-weight: bold; position: absolute; bottom: 10px; right: 10px; margin: 0;"> Instância: {idx + 1}</p> 
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+                else:
+                    auto_pred_container.markdown(
+                        f"""
+                        <div style="margin: 10px; padding:10px; border-radius:25px; background-color: #26b500; position: relative;">
+                            <h4 style="text-align: center; color: white;">Sem Falhas Previstas</h4>
+                            <p style="font-size: 15px; font-weight: bold; position: absolute; bottom: 10px; right: 10px; margin: 0;"> Instância: {idx + 1}</p> 
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+            else:
+                auto_pred_container.markdown(
+                    f"""
+                    <div style="margin: 10px; padding:10px; border-radius:25px; background-color: #ff9900; position: relative;">
+                        <h4 style="text-align: center; color: white;">{prediction}</h4>
+                        <p style="font-size: 15px; font-weight: bold; position: absolute; bottom: 10px; right: 10px; margin: 0;"> Instância: {idx + 1}</p> 
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+
+            # Atualizar a barra de progresso
+            progress = (idx + 1) / total
+            progress_bar.progress(progress)
+
+            # Incrementar o índice
+            st.session_state.current_index += 1
+
+            # Esperar 3 segundos
+            time.sleep(3)
+
+        st.success("Processamento automático concluído.")
+
+# Exibir as predições realizadas
+if st.session_state.predictions:
+    st.header("📄 Predições Realizadas")
+    predictions_display = []
+    for i, pred in enumerate(st.session_state.predictions, start=1):
+        if isinstance(pred, list):
+            if pred:
+                falhas = ', '.join(pred)
+            else:
+                falhas = 'Sem Falhas'
+            predictions_display.append({'Linha': i, 'Falhas_Previstas': falhas})
+        else:
+            predictions_display.append({'Linha': i, 'Falhas_Previstas': pred})
+
+    predictions_df = pd.DataFrame(predictions_display)
+    st.dataframe(predictions_df)
 
 # Expansor para visualização da matriz de correlação
 if not data.empty:
-    with st.expander("Veja mais análises de correlação"):
+    with st.expander("📊 Veja mais análises de correlação"):
         # Análise Exploratória dos Dados
-        st.header("📊 Análise Geral dos Dados")
+        st.header("📈 Análise Geral dos Dados")
 
         # Dividir gráficos em colunas para melhor organização
         col1, col2 = st.columns(2)
 
         # Gráfico 1: Distribuição de temperatura do ar em função do tipo de máquina
         with col1:
-            st.subheader("📈 Distribuição de Temperatura do Ar por Tipo de Máquina")
+            st.subheader("📉 Distribuição de Temperatura do Ar por Tipo de Máquina")
             fig1, ax1 = plt.subplots()
             sns.boxplot(data=data, x='Type', y='Air temperature [K]', ax=ax1)
             st.pyplot(fig1)
@@ -240,14 +372,17 @@ if not data.empty:
 
 # Análises adicionais (opcional)
 if not data.empty:
-    with st.expander("Análises Adicionais"):
+    with st.expander("🔍 Análises Adicionais"):
         st.header("🔍 Análises Complementares")
 
         # Exemplo: Distribuição das classes de falha
         st.subheader("📊 Distribuição das Classes de Falha")
         failure_columns = ['TWF', 'HDF', 'PWF', 'OSF', 'RNF']
-        failure_counts = data[failure_columns].sum()
-        st.bar_chart(failure_counts)
+        if all(col in data.columns for col in failure_columns):
+            failure_counts = data[failure_columns].sum()
+            st.bar_chart(failure_counts)
+        else:
+            st.warning(f"O arquivo CSV deve conter as colunas: {', '.join(failure_columns)}")
 
         # Exemplo: Importância das Features
         st.subheader("📈 Importância das Features")
@@ -266,64 +401,3 @@ if not data.empty:
             st.pyplot(fig3)
         except Exception as e:
             st.error(f"Erro ao calcular a importância das features: {e}")
-# Função para fazer previsão em uma linha de dados
-def fazer_previsao(row, linha_atual):
-    # Preparar os dados da linha
-    type_encoded = type_mapping[row['Type']]
-    air_temp = row['Air temperature [K]']
-    process_temp = row['Process temperature [K]']
-    rot_speed = row['Rotational speed [rpm]']
-    torque = row['Torque [Nm]']
-    tool_wear = row['Tool wear [min]']
-
-        # Criação das novas features conforme engenharia de features do modelo
-    temp_diff = process_temp - air_temp
-    power = torque * rot_speed
-    wear_torque = tool_wear * torque
-
-    # Agrupando as entradas como array
-    input_data = np.array([[type_encoded, air_temp, process_temp, rot_speed, torque, tool_wear, temp_diff, power, wear_torque]])
-
-    try:
-        # Fazendo a previsão multilabel
-        y_pred = pipeline.predict(input_data)
-        # y_pred é um array binário indicando a presença de cada falha
-
-        # Usar a lista manual de classes
-        predicted_failures = [cls for cls, pred in zip(failure_classes, y_pred[0]) if pred == 1]
-
-        # Exibindo o resultado
-        if predicted_failures:
-            falhas = ', '.join(predicted_failures)
-            st.markdown(
-                f"""
-                <div style="margin: 10px; padding:10px; border-radius:25px; background-color: #cb0000; position: relative;">
-                    <h3 style="text-align: center; color: white;">Falhas Previstas</h3>
-                    <p style="text-align: center; font-size: 20px; font-weight: bold;">{falhas}</p>
-                    <p style="font-size: 15px; font-weight: bold; position: absolute; bottom: 10px; right: 10px; margin: 0;"> Instancia: {linha_atual + 1}</p> 
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-        else:
-            st.markdown(
-                f"""
-                <div style="margin: 10px; padding:10px; border-radius:25px; background-color: #26b500; position: relative;">
-                    <h3 style="text-align: center; color: white;">Sem Falhas Previstas {y_pred}</h3>
-                    <p style="font-size: 15px; font-weight: bold; position: absolute; bottom: 10px; right: 10px; margin: 0;"> Instancia: {linha_atual + 1}</p> 
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-    except Exception as e:
-        st.error(f"Erro ao fazer a previsão: {e}")
-
-
-with st.expander("Veja mais análises de correlação"):
-    # Placeholder para exibir o resultado em tempo real
-    result_div = st.empty()
-
-    # Loop para prever falhas a cada 3 segundos
-    for index, row in data.iterrows():
-        fazer_previsao(row, index)
-        time.sleep(3)  # Espera de 3 segundos entre as previsões
