@@ -421,35 +421,3 @@ if not data.empty:
             fig2, ax2 = plt.subplots()
             sns.scatterplot(data=data, x='Rotational speed [rpm]', y='Torque [Nm]', hue='Machine failure', palette='coolwarm', ax=ax2)
             st.pyplot(fig2)
-
-# Análises adicionais (opcional)
-if not data.empty:
-    with st.expander("🔍 Análises Adicionais"):
-        st.header("🔍 Análises Complementares")
-
-        # Exemplo: Distribuição das classes de falha
-        st.subheader("📊 Distribuição das Classes de Falha")
-        failure_columns = ['TWF', 'HDF', 'PWF', 'OSF', 'RNF']
-        if all(col in data.columns for col in failure_columns):
-            failure_counts = data[failure_columns].sum()
-            st.bar_chart(failure_counts)
-        else:
-            st.warning(f"O arquivo CSV deve conter as colunas: {', '.join(failure_columns)}")
-
-        # Exemplo: Importância das Features
-        st.subheader("📈 Importância das Features")
-        try:
-            # Obter a média das importâncias das features de todos os classificadores
-            feature_importances = np.mean([
-                estimator.feature_importances_ for estimator in pipeline.named_steps['classifier'].estimators_
-            ], axis=0)
-            feature_names = ['Type', 'Air temperature [K]', 'Process temperature [K]', 'Rotational speed [rpm]',
-                             'Torque [Nm]', 'Tool wear [min]', 'Temp_Diff', 'Power', 'Wear_Torque']
-            feature_importances_series = pd.Series(feature_importances, index=feature_names).sort_values(ascending=False)
-            fig3, ax3 = plt.subplots(figsize=(10,6))
-            sns.barplot(x=feature_importances_series, y=feature_importances_series.index, ax=ax3)
-            ax3.set_xlabel("Importância das Features")
-            ax3.set_ylabel("Features")
-            st.pyplot(fig3)
-        except Exception as e:
-            st.error(f"Erro ao calcular a importância das features: {e}")
