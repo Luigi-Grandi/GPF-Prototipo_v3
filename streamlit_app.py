@@ -342,7 +342,7 @@ if st.button("🚀 Iniciar Processamento Automático"):
                 # Incrementar o índice
                 st.session_state.current_index += 1
                 # Esperar 3 segundos
-                time.sleep(3)
+                #time.sleep(3)
             if st.session_state.current_index >= len(data):
                 st.session_state.processing = False
                 st.success("Processamento automático concluído.")
